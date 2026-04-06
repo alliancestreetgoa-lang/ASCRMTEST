@@ -9,10 +9,11 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Trash2, Shield, Check } from "lucide-react";
 import type { User } from "@workspace/api-client-react";
+import { toast } from "sonner";
 
 const settingsTabs = ["General", "Tax Settings", "Users", "Roles & Permissions"];
 
-const roles = [
+const defaultRoles = [
   { name: "Super Admin", users: 1, permissions: ["Create Client", "Edit Client", "Delete Client", "Assign Task", "Manage Users", "View Reports", "Tax Settings"] },
   { name: "Admin", users: 1, permissions: ["Create Client", "Edit Client", "Assign Task", "View Reports"] },
   { name: "Manager", users: 1, permissions: ["Create Client", "Edit Client", "Assign Task", "View Reports"] },
@@ -88,12 +89,37 @@ export default function Settings() {
   const [tab, setTab] = useState("Users");
   const [showUserForm, setShowUserForm] = useState(false);
   const [editRole, setEditRole] = useState<string | null>(null);
+  const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(
+    Object.fromEntries(defaultRoles.map(r => [r.name, [...r.permissions]]))
+  );
 
   const { data: users, isLoading } = useListUsers();
-  const createUser = useCreateUser({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListUsersQueryKey() }) } });
-  const deleteUser = useDeleteUser({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListUsersQueryKey() }) } });
+  const createUser = useCreateUser({
+    mutation: {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListUsersQueryKey() }); toast.success("User added"); },
+      onError: () => toast.error("Failed to add user"),
+    }
+  });
+  const deleteUser = useDeleteUser({
+    mutation: {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListUsersQueryKey() }); toast.success("User removed"); },
+      onError: () => toast.error("Failed to remove user"),
+    }
+  });
 
-  const selectedRole = roles.find(r => r.name === editRole);
+  const togglePermission = (roleName: string, perm: string) => {
+    setRolePermissions(prev => {
+      const current = prev[roleName] ?? [];
+      const updated = current.includes(perm)
+        ? current.filter(p => p !== perm)
+        : [...current, perm];
+      return { ...prev, [roleName]: updated };
+    });
+  };
+
+  const savePermissions = (roleName: string) => {
+    toast.success(`Permissions saved for ${roleName}`);
+  };
 
   return (
     <AppLayout title="Settings">
@@ -262,16 +288,18 @@ export default function Settings() {
                   <th className="px-4 py-3"></th>
                 </tr></thead>
                 <tbody className="divide-y divide-border">
-                  {roles.map(r => (
+                  {defaultRoles.map(r => (
                     <tr key={r.name} className={`hover:bg-muted/20 transition-colors cursor-pointer ${editRole === r.name ? "bg-primary/5" : ""}`}
                       onClick={() => setEditRole(r.name)}>
-                      <td className="px-5 py-3.5 font-medium flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-primary" />
-                        {r.name}
+                      <td className="px-5 py-3.5 font-medium">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-primary" />
+                          {r.name}
+                        </div>
                       </td>
                       <td className="px-4 py-3.5 text-muted-foreground">{r.users}</td>
                       <td className="px-4 py-3.5">
-                        <button className="text-xs text-primary hover:underline">Edit</button>
+                        <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(r.name); }}>Edit</button>
                       </td>
                     </tr>
                   ))}
@@ -281,28 +309,30 @@ export default function Settings() {
 
             {/* Permission editor */}
             <div className="col-span-3 bg-white rounded-xl border border-border shadow-sm overflow-hidden">
-              {selectedRole ? (
+              {editRole ? (
                 <>
                   <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
-                    <h3 className="font-semibold text-sm">Permissions — {selectedRole.name}</h3>
+                    <h3 className="font-semibold text-sm">Permissions — {editRole}</h3>
                     <button onClick={() => setEditRole(null)} className="p-1 hover:bg-muted rounded-lg"><X className="w-4 h-4" /></button>
                   </div>
                   <div className="p-5 space-y-3">
                     {allPermissions.map(perm => {
-                      const has = selectedRole.permissions.includes(perm);
+                      const has = (rolePermissions[editRole] ?? []).includes(perm);
                       return (
-                        <div key={perm} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors">
+                        <button key={perm} onClick={() => togglePermission(editRole, perm)}
+                          className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors cursor-pointer text-left">
                           <span className="text-sm font-medium">{perm}</span>
-                          <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
-                            has ? "bg-primary border-primary" : "border-border"
+                          <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors shrink-0 ${
+                            has ? "bg-primary border-primary" : "border-border bg-white"
                           }`}>
                             {has && <Check className="w-3 h-3 text-white" />}
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                     <div className="pt-3 flex justify-end">
-                      <button className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90">
+                      <button onClick={() => savePermissions(editRole)}
+                        className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90">
                         Save Permissions
                       </button>
                     </div>
