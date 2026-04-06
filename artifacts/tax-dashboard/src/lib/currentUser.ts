@@ -1,8 +1,9 @@
 export const CURRENT_USER = {
-  id: 1,
-  name: "Sarah Mitchell",
+  id: 7,
+  name: "Shaukin Phaterpekar",
+  email: "Shaukin@alliancestreet.ae",
   role: "SuperAdmin" as const,
-  initials: "SM",
+  initials: "SP",
 };
 
 export const IS_SUPER_ADMIN = CURRENT_USER.role === "SuperAdmin";
