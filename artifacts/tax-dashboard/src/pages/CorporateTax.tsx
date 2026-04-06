@@ -4,7 +4,6 @@ import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
   useListCorporateTax, useCreateCorporateTaxRecord, useUpdateCorporateTaxRecord, useListClients,
-  getListCorporateTaxQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
@@ -101,7 +100,7 @@ export default function CorporateTax() {
   const { data: records, isLoading } = useListCorporateTax({ status: filterStatus });
   const { data: clients } = useListClients({});
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: getListCorporateTaxQueryKey() });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/corporate-tax"] });
 
   const createRecord = useCreateCorporateTaxRecord({
     mutation: {
@@ -111,7 +110,14 @@ export default function CorporateTax() {
   });
   const updateRecord = useUpdateCorporateTaxRecord({
     mutation: {
-      onSuccess: () => { invalidate(); toast.success("Corporate tax record updated"); },
+      onSuccess: (updated) => {
+        qc.setQueriesData(
+          { queryKey: ["/api/corporate-tax"] },
+          (old: CorporateTaxRecord[] | undefined) => old ? old.map(r => r.id === updated.id ? { ...r, ...updated } : r) : old,
+        );
+        invalidate();
+        toast.success("Corporate tax record updated");
+      },
       onError: () => toast.error("Failed to update CT record"),
     }
   });

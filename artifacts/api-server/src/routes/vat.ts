@@ -25,8 +25,8 @@ router.get("/vat", async (req, res): Promise<void> => {
   if (status) conditions.push(eq(vatRecordsTable.status, status));
 
   const rawRecords = conditions.length > 0
-    ? await db.select().from(vatRecordsTable).where(and(...conditions)).orderBy(vatRecordsTable.dueDate)
-    : await db.select().from(vatRecordsTable).orderBy(vatRecordsTable.dueDate);
+    ? await db.select().from(vatRecordsTable).where(and(...conditions)).orderBy(vatRecordsTable.dueDate, vatRecordsTable.id)
+    : await db.select().from(vatRecordsTable).orderBy(vatRecordsTable.dueDate, vatRecordsTable.id);
 
   const clients = await db.select({ id: clientsTable.id, name: clientsTable.name }).from(clientsTable);
   const clientMap: Record<number, string> = {};

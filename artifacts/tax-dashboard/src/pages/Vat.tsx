@@ -4,7 +4,6 @@ import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
   useListVatRecords, useCreateVatRecord, useUpdateVatRecord, useListClients,
-  getListVatRecordsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
@@ -101,7 +100,7 @@ export default function Vat() {
   const { data: records, isLoading } = useListVatRecords({ status: filterStatus });
   const { data: clients } = useListClients({});
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: getListVatRecordsQueryKey() });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/vat"] });
 
   const createRecord = useCreateVatRecord({
     mutation: {
@@ -111,7 +110,14 @@ export default function Vat() {
   });
   const updateRecord = useUpdateVatRecord({
     mutation: {
-      onSuccess: () => { invalidate(); toast.success("VAT record updated"); },
+      onSuccess: (updated) => {
+        qc.setQueriesData(
+          { queryKey: ["/api/vat"] },
+          (old: VatRecord[] | undefined) => old ? old.map(r => r.id === updated.id ? { ...r, ...updated } : r) : old,
+        );
+        invalidate();
+        toast.success("VAT record updated");
+      },
       onError: () => toast.error("Failed to update VAT record"),
     }
   });

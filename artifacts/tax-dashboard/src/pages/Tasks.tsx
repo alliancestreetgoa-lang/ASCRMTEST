@@ -4,7 +4,6 @@ import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
   useListTasks, useCreateTask, useUpdateTask, useDeleteTask, useListClients,
-  getListTasksQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, LayoutList, Columns3, X, Trash2, Pencil } from "lucide-react";
@@ -145,7 +144,7 @@ export default function Tasks() {
   const { data: tasks, isLoading } = useListTasks({ status: filterStatus, priority: filterPriority });
   const { data: clients } = useListClients({});
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: getListTasksQueryKey() });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/tasks"] });
 
   const createTask = useCreateTask({
     mutation: {
@@ -155,7 +154,14 @@ export default function Tasks() {
   });
   const updateTask = useUpdateTask({
     mutation: {
-      onSuccess: () => { invalidate(); toast.success("Task updated"); },
+      onSuccess: (updated) => {
+        qc.setQueriesData(
+          { queryKey: ["/api/tasks"] },
+          (old: Task[] | undefined) => old ? old.map(t => t.id === updated.id ? { ...t, ...updated } : t) : old,
+        );
+        invalidate();
+        toast.success("Task updated");
+      },
       onError: () => toast.error("Failed to update task"),
     }
   });

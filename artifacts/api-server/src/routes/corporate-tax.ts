@@ -25,8 +25,8 @@ router.get("/corporate-tax", async (req, res): Promise<void> => {
   if (status) conditions.push(eq(corporateTaxTable.status, status));
 
   const rawRecords = conditions.length > 0
-    ? await db.select().from(corporateTaxTable).where(and(...conditions)).orderBy(corporateTaxTable.deadline)
-    : await db.select().from(corporateTaxTable).orderBy(corporateTaxTable.deadline);
+    ? await db.select().from(corporateTaxTable).where(and(...conditions)).orderBy(corporateTaxTable.deadline, corporateTaxTable.id)
+    : await db.select().from(corporateTaxTable).orderBy(corporateTaxTable.deadline, corporateTaxTable.id);
 
   const clients = await db.select({ id: clientsTable.id, name: clientsTable.name }).from(clientsTable);
   const clientMap: Record<number, string> = {};

@@ -5,7 +5,6 @@ import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
   useListClients, useCreateClient, useUpdateClient, useDeleteClient,
-  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Eye, Pencil, Trash2, X, Globe } from "lucide-react";
@@ -120,7 +119,7 @@ export default function Clients() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: clients, isLoading } = useListClients({ search, country, status });
-  const invalidate = () => qc.invalidateQueries({ queryKey: getListClientsQueryKey() });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/clients"] });
   const createClient = useCreateClient({
     mutation: {
       onSuccess: () => { invalidate(); toast.success("Client added successfully"); },
