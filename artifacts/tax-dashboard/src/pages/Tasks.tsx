@@ -9,6 +9,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, LayoutList, Columns3, X, Trash2, Pencil } from "lucide-react";
 import type { Task } from "@workspace/api-client-react";
+import { useSearch } from "wouter";
 
 const statusColumns = ["Pending", "InProgress", "Completed", "Overdue"] as const;
 
@@ -128,8 +129,12 @@ function KanbanCard({ task, onUpdate }: { task: Task; onUpdate: (id: number, sta
 
 export default function Tasks() {
   const qc = useQueryClient();
+  const searchString = useSearch();
   const [view, setView] = useState<"table" | "kanban">("table");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get("status") ?? "";
+  });
   const [filterPriority, setFilterPriority] = useState("");
   const [showForm, setShowForm] = useState(false);
 

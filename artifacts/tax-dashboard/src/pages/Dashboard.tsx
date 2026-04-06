@@ -10,16 +10,18 @@ import {
   Users, CheckSquare, AlertTriangle, CheckCircle,
   FileText, Building2, Calendar, TrendingUp
 } from "lucide-react";
+import { Link } from "wouter";
 
-function StatCard({ icon: Icon, value, label, color, sub }: {
+function StatCard({ icon: Icon, value, label, color, sub, href }: {
   icon: React.ElementType;
   value: number | undefined;
   label: string;
   color: string;
   sub?: string;
+  href?: string;
 }) {
-  return (
-    <div className="bg-white rounded-xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow">
+  const card = (
+    <div className={`bg-white rounded-xl border border-border p-5 shadow-sm transition-all hover:shadow-md ${href ? "cursor-pointer hover:border-gray-300 hover:-translate-y-0.5" : ""}`}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-muted-foreground font-medium">{label}</p>
@@ -34,6 +36,11 @@ function StatCard({ icon: Icon, value, label, color, sub }: {
       </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href} className="block no-underline">{card}</Link>;
+  }
+  return card;
 }
 
 export default function Dashboard() {
@@ -52,6 +59,7 @@ export default function Dashboard() {
             label="Total Clients"
             color="hsl(224 76% 33%)"
             sub="Active accounts"
+            href="/clients"
           />
           <StatCard
             icon={CheckSquare}
@@ -59,6 +67,7 @@ export default function Dashboard() {
             label="Pending Tasks"
             color="hsl(43 96% 45%)"
             sub="Awaiting action"
+            href="/tasks?status=Pending"
           />
           <StatCard
             icon={AlertTriangle}
@@ -66,6 +75,7 @@ export default function Dashboard() {
             label="Overdue"
             color="hsl(0 84% 55%)"
             sub="Requires attention"
+            href="/tasks?status=Overdue"
           />
           <StatCard
             icon={CheckCircle}
@@ -73,6 +83,7 @@ export default function Dashboard() {
             label="Completed"
             color="hsl(142 71% 35%)"
             sub="This period"
+            href="/tasks?status=Completed"
           />
         </div>
 
