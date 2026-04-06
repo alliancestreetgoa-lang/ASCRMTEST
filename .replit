@@ -31,4 +31,3 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-SHARED_DATABASE_URL = "postgresql://postgres:Sapna%4012345%24%24@db.calhqpqhmkepswixvabz.supabase.co:5432/postgres"

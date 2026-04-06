@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
+import { createHash } from "crypto";
 import { db, usersTable } from "@workspace/db";
 import {
   CreateUserBody,
@@ -9,6 +10,10 @@ import {
   DeleteUserParams,
   ListUsersResponse,
 } from "@workspace/api-zod";
+
+function hashPassword(plain: string): string {
+  return createHash("sha256").update(plain).digest("hex");
+}
 
 const router: IRouter = Router();
 
@@ -64,6 +69,33 @@ router.delete("/users/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+router.patch("/users/:id/password", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid user id" });
+    return;
+  }
+
+  const { newPassword } = req.body as { newPassword?: string };
+  if (!newPassword || newPassword.trim().length < 6) {
+    res.status(400).json({ error: "New password must be at least 6 characters" });
+    return;
+  }
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ password: hashPassword(newPassword.trim()) })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.json({ success: true });
 });
 
 export default router;
