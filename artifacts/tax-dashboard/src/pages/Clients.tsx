@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "wouter";
+import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
@@ -110,7 +110,7 @@ function ClientForm({ initial, onClose, onSave }: {
 
 export default function Clients() {
   const qc = useQueryClient();
-  const { navigate } = useRouter();
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("");
   const [status, setStatus] = useState("");

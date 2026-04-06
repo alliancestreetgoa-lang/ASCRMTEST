@@ -1,4 +1,4 @@
-import { useParams, useRouter } from "wouter";
+import { useParams, useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
@@ -12,7 +12,7 @@ const tabs = ["Overview", "VAT", "Corporate Tax", "Tasks", "Documents"];
 
 export default function ClientProfile() {
   const { id } = useParams<{ id: string }>();
-  const { navigate } = useRouter();
+  const [, navigate] = useLocation();
   const clientId = parseInt(id ?? "0", 10);
   const [tab, setTab] = useState("Overview");
 

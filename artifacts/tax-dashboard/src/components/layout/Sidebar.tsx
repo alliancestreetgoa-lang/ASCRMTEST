@@ -1,4 +1,4 @@
-import { useLocation, useRouter } from "wouter";
+import { useLocation } from "wouter";
 import {
   LayoutDashboard, Users, CheckSquare, FileText, BarChart3,
   Settings, ChevronDown, TrendingUp, LogOut, Shield
@@ -22,24 +22,11 @@ const navItems = [
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
-function NavLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
-  const { navigate } = useRouter();
-  return (
-    <button
-      onClick={() => navigate(href)}
-      className={className}
-    >
-      {children}
-    </button>
-  );
-}
-
 export default function Sidebar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [taxOpen, setTaxOpen] = useState(
     location.startsWith("/vat") || location.startsWith("/corporate-tax")
   );
-  const { navigate } = useRouter();
 
   return (
     <div className="fixed left-0 top-0 h-screen w-60 flex flex-col z-30" style={{ background: "hsl(222 47% 11%)" }}>
