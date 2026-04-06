@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronDown, KeyRound, X, Eye, EyeOff } from "lucide-react";
+import { Bell, Search, ChevronDown, KeyRound, X, Eye, EyeOff, LogOut } from "lucide-react";
 import { useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useListClients, useListTasks } from "@workspace/api-client-react";
@@ -187,6 +187,35 @@ function ResetPasswordModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function LoggedOutScreen({ onSignIn }: { onSignIn: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(222_47%_11%)]">
+      <div className="flex flex-col items-center gap-6 text-center px-6">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: "hsl(224 76% 45%)" }}>
+          <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </div>
+        <div>
+          <div className="text-white font-bold text-2xl mb-1">TaxFlow</div>
+          <div className="text-sm" style={{ color: "hsl(215 16% 55%)" }}>Pro Dashboard</div>
+        </div>
+        <div className="mt-2">
+          <div className="text-white font-semibold text-lg mb-1">You've been signed out</div>
+          <div className="text-sm" style={{ color: "hsl(215 16% 55%)" }}>Sign back in to continue managing your clients.</div>
+        </div>
+        <button
+          onClick={onSignIn}
+          className="mt-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ background: "hsl(224 76% 45%)" }}
+        >
+          Sign back in
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Topbar({ title }: { title: string }) {
   const [, navigate] = useLocation();
   const { region, setRegion } = useRegion();
@@ -194,6 +223,7 @@ export default function Topbar({ title }: { title: string }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -290,6 +320,14 @@ export default function Topbar({ title }: { title: string }) {
                     Reset Password
                   </button>
                 )}
+                <div className="my-1 border-t border-border" />
+                <button
+                  onClick={() => { setShowUserMenu(false); navigate("/"); setLoggedOut(true); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log Out
+                </button>
               </div>
             )}
           </div>
@@ -298,6 +336,10 @@ export default function Topbar({ title }: { title: string }) {
 
       {showResetModal && (
         <ResetPasswordModal onClose={() => setShowResetModal(false)} />
+      )}
+
+      {loggedOut && (
+        <LoggedOutScreen onSignIn={() => setLoggedOut(false)} />
       )}
     </>
   );
