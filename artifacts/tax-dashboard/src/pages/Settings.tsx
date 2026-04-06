@@ -3,11 +3,11 @@ import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
-  useListUsers, useCreateUser, useDeleteUser,
+  useListUsers, useCreateUser, useUpdateUser, useDeleteUser,
   getListUsersQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Trash2, Shield, Check } from "lucide-react";
+import { Plus, X, Trash2, Pencil, Shield, Check } from "lucide-react";
 import type { User } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { IS_SUPER_ADMIN } from "@/lib/currentUser";
@@ -23,22 +23,24 @@ const defaultRoles = [
 
 const allPermissions = ["Create Client", "Edit Client", "Delete Client", "Assign Task", "Manage Users", "View Reports", "Tax Settings"];
 
-function UserForm({ onClose, onSave }: {
+function UserForm({ onClose, onSave, editUser }: {
   onClose: () => void;
   onSave: (data: unknown) => void;
+  editUser?: User;
 }) {
+  const isEditing = !!editUser;
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    role: "Employee" as User["role"],
-    status: "Active" as User["status"],
+    name: editUser?.name ?? "",
+    email: editUser?.email ?? "",
+    role: (editUser?.role ?? "Employee") as User["role"],
+    status: (editUser?.status ?? "Active") as User["status"],
   });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-base font-semibold">Add User</h2>
+          <h2 className="text-base font-semibold">{isEditing ? "Edit User" : "Add User"}</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
@@ -77,7 +79,7 @@ function UserForm({ onClose, onSave }: {
           <button onClick={onClose} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted">Cancel</button>
           <button onClick={() => onSave(form)} disabled={!form.name || !form.email}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50">
-            Add User
+            {isEditing ? "Save Changes" : "Add User"}
           </button>
         </div>
       </div>
@@ -89,6 +91,7 @@ export default function Settings() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("Users");
   const [showUserForm, setShowUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<string | null>(null);
   const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(
     Object.fromEntries(defaultRoles.map(r => [r.name, [...r.permissions]]))
@@ -99,6 +102,12 @@ export default function Settings() {
     mutation: {
       onSuccess: () => { qc.invalidateQueries({ queryKey: getListUsersQueryKey() }); toast.success("User added"); },
       onError: () => toast.error("Failed to add user"),
+    }
+  });
+  const updateUser = useUpdateUser({
+    mutation: {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListUsersQueryKey() }); toast.success("User updated"); setEditingUser(null); },
+      onError: () => toast.error("Failed to update user"),
     }
   });
   const deleteUser = useDeleteUser({
@@ -130,6 +139,15 @@ export default function Settings() {
           onSave={(data) => {
             createUser.mutate({ data: data as Parameters<typeof createUser.mutate>[0]["data"] });
             setShowUserForm(false);
+          }}
+        />
+      )}
+      {editingUser && (
+        <UserForm
+          editUser={editingUser}
+          onClose={() => setEditingUser(null)}
+          onSave={(data) => {
+            updateUser.mutate({ id: editingUser.id, data: data as Parameters<typeof updateUser.mutate>[0]["data"] });
           }}
         />
       )}
@@ -263,10 +281,18 @@ export default function Settings() {
                         <td className="px-4 py-3.5 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
                         {IS_SUPER_ADMIN && (
                           <td className="px-4 py-3.5">
-                            <button onClick={() => deleteUser.mutate({ id: u.id })}
-                              className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => setEditingUser(u)}
+                                className="p-1.5 hover:bg-blue-50 text-blue-500 rounded-lg transition-colors"
+                                title="Edit user">
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => deleteUser.mutate({ id: u.id })}
+                                className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors"
+                                title="Delete user">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
