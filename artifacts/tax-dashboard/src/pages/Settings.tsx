@@ -7,7 +7,7 @@ import {
   getListUsersQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, X, Trash2, Pencil, Shield, Check } from "lucide-react";
+import { Plus, X, Trash2, Pencil, Shield, Check, Eye, EyeOff } from "lucide-react";
 import type { User } from "@workspace/api-client-react";
 import { toast } from "sonner";
 import { IS_SUPER_ADMIN } from "@/lib/currentUser";
@@ -25,7 +25,7 @@ const allPermissions = ["Create Client", "Edit Client", "Delete Client", "Assign
 
 function UserForm({ onClose, onSave, editUser }: {
   onClose: () => void;
-  onSave: (data: unknown) => void;
+  onSave: (data: { name: string; email: string; role: User["role"]; status: User["status"]; password?: string }) => void;
   editUser?: User;
 }) {
   const isEditing = !!editUser;
@@ -34,7 +34,20 @@ function UserForm({ onClose, onSave, editUser }: {
     email: editUser?.email ?? "",
     role: (editUser?.role ?? "Employee") as User["role"],
     status: (editUser?.status ?? "Active") as User["status"],
+    password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSave = () => {
+    const payload: { name: string; email: string; role: User["role"]; status: User["status"]; password?: string } = {
+      name: form.name,
+      email: form.email,
+      role: form.role,
+      status: form.status,
+    };
+    if (form.password.trim()) payload.password = form.password.trim();
+    onSave(payload);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -74,10 +87,32 @@ function UserForm({ onClose, onSave, editUser }: {
               </select>
             </div>
           </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              {isEditing ? "New Password" : "Password"}
+              {isEditing && <span className="ml-1 text-muted-foreground/60 font-normal">(leave blank to keep unchanged)</span>}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                placeholder={isEditing ? "Enter new password…" : "Set a password…"}
+                className="w-full px-3 py-2.5 pr-10 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(p => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
         </div>
         <div className="px-6 py-4 border-t flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted">Cancel</button>
-          <button onClick={() => onSave(form)} disabled={!form.name || !form.email}
+          <button onClick={handleSave} disabled={!form.name || !form.email}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50">
             {isEditing ? "Save Changes" : "Add User"}
           </button>
@@ -137,7 +172,8 @@ export default function Settings() {
         <UserForm
           onClose={() => setShowUserForm(false)}
           onSave={(data) => {
-            createUser.mutate({ data: data as Parameters<typeof createUser.mutate>[0]["data"] });
+            const { password: _pw, ...rest } = data as { name: string; email: string; role: User["role"]; status: User["status"]; password?: string };
+            createUser.mutate({ data: rest });
             setShowUserForm(false);
           }}
         />
@@ -146,8 +182,21 @@ export default function Settings() {
         <UserForm
           editUser={editingUser}
           onClose={() => setEditingUser(null)}
-          onSave={(data) => {
-            updateUser.mutate({ id: editingUser.id, data: data as Parameters<typeof updateUser.mutate>[0]["data"] });
+          onSave={async (data) => {
+            const { password, ...rest } = data as { name: string; email: string; role: User["role"]; status: User["status"]; password?: string };
+            updateUser.mutate({ id: editingUser.id, data: rest });
+            if (password) {
+              try {
+                const res = await fetch(`/api/users/${editingUser.id}/password`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ newPassword: password }),
+                });
+                if (!res.ok) toast.error("User updated but password change failed");
+              } catch {
+                toast.error("User updated but password change failed");
+              }
+            }
           }}
         />
       )}
