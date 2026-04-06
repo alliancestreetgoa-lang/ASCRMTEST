@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, LayoutList, Columns3, X, Trash2, Pencil } from "lucide-react";
 import type { Task } from "@workspace/api-client-react";
 import { useSearch } from "wouter";
+import { toast } from "sonner";
 
 const statusColumns = ["Pending", "InProgress", "Completed", "Overdue"] as const;
 
@@ -103,7 +104,7 @@ function TaskForm({ initial, clients, onClose, onSave }: {
           <button onClick={onClose} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted">Cancel</button>
           <button onClick={() => onSave(form)} disabled={!form.title || !form.assignedTo || !form.dueDate}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50">
-            {initial?.id ? "Save" : "Create"}
+            {initial?.id ? "Save Changes" : "Create"}
           </button>
         </div>
       </div>
@@ -111,9 +112,10 @@ function TaskForm({ initial, clients, onClose, onSave }: {
   );
 }
 
-function KanbanCard({ task, onUpdate }: { task: Task; onUpdate: (id: number, status: string) => void }) {
+function KanbanCard({ task, onEdit }: { task: Task; onEdit: (task: Task) => void }) {
   return (
-    <div className="bg-white border border-border rounded-xl p-3.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+    <div onClick={() => onEdit(task)}
+      className="bg-white border border-border rounded-xl p-3.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="text-sm font-medium text-foreground leading-snug">{task.title}</span>
         <StatusBadge status={task.priority} />
@@ -137,30 +139,58 @@ export default function Tasks() {
   });
   const [filterPriority, setFilterPriority] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: tasks, isLoading } = useListTasks({ status: filterStatus, priority: filterPriority });
   const { data: clients } = useListClients({});
-  const createTask = useCreateTask({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListTasksQueryKey() }) } });
-  const updateTask = useUpdateTask({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListTasksQueryKey() }) } });
-  const deleteTask = useDeleteTask({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListTasksQueryKey() }) } });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: getListTasksQueryKey() });
+
+  const createTask = useCreateTask({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Task created successfully"); },
+      onError: () => toast.error("Failed to create task"),
+    }
+  });
+  const updateTask = useUpdateTask({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Task updated"); },
+      onError: () => toast.error("Failed to update task"),
+    }
+  });
+  const deleteTask = useDeleteTask({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Task deleted"); },
+      onError: () => toast.error("Failed to delete task"),
+    }
+  });
 
   const clientsForForm = (clients ?? []).map(c => ({ id: c.id, name: c.name }));
+
+  const openCreate = () => { setEditingTask(null); setShowForm(true); };
+  const openEdit = (task: Task) => { setEditingTask(task); setShowForm(true); };
+  const closeForm = () => { setEditingTask(null); setShowForm(false); };
 
   return (
     <AppLayout title="Tasks">
       {showForm && (
         <TaskForm
+          initial={editingTask ?? undefined}
           clients={clientsForForm}
-          onClose={() => setShowForm(false)}
+          onClose={closeForm}
           onSave={(data) => {
-            createTask.mutate({ data: data as Parameters<typeof createTask.mutate>[0]["data"] });
-            setShowForm(false);
+            if (editingTask) {
+              updateTask.mutate({ id: editingTask.id, data: data as Parameters<typeof updateTask.mutate>[0]["data"] });
+            } else {
+              createTask.mutate({ data: data as Parameters<typeof createTask.mutate>[0]["data"] });
+            }
+            closeForm();
           }}
         />
       )}
 
       <div className="space-y-5">
-        {/* Toolbar */}
         <div className="flex items-center gap-3 flex-wrap">
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             className="px-3 py-2 text-sm border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20">
@@ -190,7 +220,7 @@ export default function Tasks() {
             </button>
           </div>
 
-          <button onClick={() => setShowForm(true)}
+          <button onClick={openCreate}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90">
             <Plus className="w-4 h-4" />
             Create Task
@@ -225,17 +255,23 @@ export default function Tasks() {
                         </td>
                         <td className="px-4 py-3.5 text-muted-foreground">{task.clientName}</td>
                         <td className="px-4 py-3.5">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">{task.type}</span>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">{task.type === "CorporateTax" ? "Corp. Tax" : task.type}</span>
                         </td>
                         <td className="px-4 py-3.5 text-muted-foreground">{formatDate(task.dueDate)}</td>
                         <td className="px-4 py-3.5 text-muted-foreground">{task.assignedTo}</td>
                         <td className="px-4 py-3.5"><StatusBadge status={task.priority} /></td>
                         <td className="px-4 py-3.5"><StatusBadge status={task.status} /></td>
                         <td className="px-4 py-3.5">
-                          <button onClick={() => deleteTask.mutate({ id: task.id })}
-                            className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => openEdit(task)}
+                              className="p-1.5 hover:bg-yellow-50 text-yellow-600 rounded-lg transition-colors" title="Edit">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => setDeleteId(task.id)}
+                              className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors" title="Delete">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -244,6 +280,11 @@ export default function Tasks() {
                 </table>
               )}
             </div>
+            {tasks && tasks.length > 0 && (
+              <div className="px-5 py-3 border-t border-border">
+                <span className="text-xs text-muted-foreground">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-4">
@@ -265,9 +306,7 @@ export default function Tasks() {
                 </div>
                 <div className="space-y-2">
                   {(tasks ?? []).filter(t => t.status === col).map(task => (
-                    <KanbanCard key={task.id} task={task} onUpdate={(id, status) =>
-                      updateTask.mutate({ id, data: { title: task.title, clientId: task.clientId, type: task.type, dueDate: task.dueDate, assignedTo: task.assignedTo, status: status as Task["status"], priority: task.priority } })
-                    } />
+                    <KanbanCard key={task.id} task={task} onEdit={openEdit} />
                   ))}
                 </div>
               </div>
@@ -275,6 +314,20 @@ export default function Tasks() {
           </div>
         )}
       </div>
+
+      {deleteId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <h3 className="font-semibold text-base mb-2">Delete Task</h3>
+            <p className="text-sm text-muted-foreground mb-6">Are you sure you want to delete this task? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted">Cancel</button>
+              <button onClick={() => { deleteTask.mutate({ id: deleteId }); setDeleteId(null); }}
+                className="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-lg hover:opacity-90">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

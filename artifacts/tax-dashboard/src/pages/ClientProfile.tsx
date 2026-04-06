@@ -116,7 +116,7 @@ export default function ClientProfile() {
               <h3 className="text-sm font-semibold mb-4">Client Details</h3>
               <dl className="space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-muted-foreground">VAT Number</dt><dd className="font-mono">{client.vatNumber ?? "—"}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Corp. Tax Status</dt><dd><StatusBadge status={client.corporateTaxStatus ?? "Pending"} /></dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Corp. Tax Status</dt><dd>{client.corporateTaxStatus ? <StatusBadge status={client.corporateTaxStatus} /> : <span className="text-muted-foreground">—</span>}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted-foreground">Country</dt><dd>{client.country}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted-foreground">Client Since</dt><dd>{formatDate(client.createdAt)}</dd></div>
               </dl>

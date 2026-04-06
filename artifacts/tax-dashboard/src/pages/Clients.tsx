@@ -10,6 +10,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Eye, Pencil, Trash2, X, Globe } from "lucide-react";
 import type { Client } from "@workspace/api-client-react";
+import { toast } from "sonner";
 
 function ClientForm({ initial, onClose, onSave }: {
   initial?: Partial<Client>;
@@ -120,9 +121,24 @@ export default function Clients() {
 
   const { data: clients, isLoading } = useListClients({ search, country, status });
   const invalidate = () => qc.invalidateQueries({ queryKey: getListClientsQueryKey() });
-  const createClient = useCreateClient({ mutation: { onSuccess: invalidate } });
-  const updateClient = useUpdateClient({ mutation: { onSuccess: invalidate } });
-  const deleteClient = useDeleteClient({ mutation: { onSuccess: invalidate } });
+  const createClient = useCreateClient({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Client added successfully"); },
+      onError: () => toast.error("Failed to add client"),
+    }
+  });
+  const updateClient = useUpdateClient({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Client updated"); },
+      onError: () => toast.error("Failed to update client"),
+    }
+  });
+  const deleteClient = useDeleteClient({
+    mutation: {
+      onSuccess: () => { invalidate(); toast.success("Client deleted"); },
+      onError: () => toast.error("Failed to delete client"),
+    }
+  });
 
   const openCreate = () => { setEditingClient(null); setShowForm(true); };
   const openEdit = (client: Client) => { setEditingClient(client); setShowForm(true); };
@@ -209,7 +225,11 @@ export default function Clients() {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-muted-foreground font-mono text-xs">{c.vatNumber ?? "—"}</td>
-                      <td className="px-4 py-4"><StatusBadge status={c.corporateTaxStatus ?? "Pending"} /></td>
+                      <td className="px-4 py-4">
+                        {c.corporateTaxStatus
+                          ? <StatusBadge status={c.corporateTaxStatus} />
+                          : <span className="text-muted-foreground">—</span>}
+                      </td>
                       <td className="px-4 py-4"><StatusBadge status={c.status} /></td>
                       <td className="px-4 py-4 text-muted-foreground">{c.assignedTo}</td>
                       <td className="px-4 py-4">
