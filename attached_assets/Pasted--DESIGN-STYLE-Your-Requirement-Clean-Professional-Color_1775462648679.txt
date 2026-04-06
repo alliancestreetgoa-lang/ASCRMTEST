@@ -1,0 +1,193 @@
+🎨 🎯 DESIGN STYLE (Your Requirement: Clean + Professional)
+🎨 Colors
+Primary: #1E3A8A (Deep Blue)
+Secondary: #0F766E (Teal)
+Background: #F8FAFC (Light gray)
+Card: #FFFFFF
+Border: #E5E7EB
+🔤 Font
+Headings: Inter / Poppins (Bold)
+Body: Regular / Medium
+🧱 FIGMA FILE STRUCTURE
+
+Create pages in Figma:
+
+Design System
+Dashboard
+Clients
+Tasks
+VAT & Tax
+Settings
+🧩 1. DESIGN SYSTEM (Create First)
+Components to Create:
+🔘 Buttons
+Primary (Blue)
+Secondary (Outline)
+Danger (Red)
+📦 Cards
+Rounded corners (12px)
+Soft shadow
+📊 Table Component
+Header row (bold)
+Hover effect
+🏷 Status Tags
+Green → Completed
+Yellow → Pending
+Red → Overdue
+🖥️ 2. DASHBOARD SCREEN (MAIN UI)
+4
+Frame: Dashboard - Admin
+Layout Grid:
+12 column grid
+Margin: 24px
+Gutter: 16px
+🔷 Structure
+Sidebar (Left - Fixed 240px)
+Logo top
+Menu items:
+Dashboard
+Clients
+Tasks
+VAT
+Corporate Tax
+Reports
+Users
+Settings
+Topbar (Height: 64px)
+Search bar (left)
+Filter dropdown (UK/UAE)
+Notification bell
+Profile avatar
+📊 Content Area
+Row 1: Stats Cards
+
+4 cards (equal width):
+
+Total Clients
+Pending Tasks
+Overdue
+Completed
+
+👉 Each card:
+
+Icon
+Number (big)
+Label
+Row 2: Split Layout
+Left (70%)
+
+📅 Upcoming Deadlines Table
+
+Columns:
+
+Client
+Type (VAT/CT)
+Due Date
+Status
+Assigned
+Right (30%)
+
+📌 Alerts Panel
+
+Cards:
+
+🔴 Overdue
+🟡 Upcoming
+🟢 Completed
+👥 3. CLIENT MANAGEMENT SCREEN
+4
+Frame: Clients List
+Top Section:
+Add Client (Primary button)
+Filters:
+Country dropdown
+Status
+Assigned Employee
+Table Layout:
+
+| Client | Country | VAT No | CT Status | Assigned | Actions |
+
+👉 Actions:
+
+View
+Edit
+Delete
+📄 Client Profile Page
+
+Tabs:
+
+Overview
+VAT
+Corporate Tax
+Tasks
+Documents
+📌 4. TASK MANAGEMENT SCREEN
+4
+Frame: Tasks
+Top:
+Create Task
+Filters:
+Employee
+Status
+Priority
+Table:
+
+| Task | Client | Type | Due Date | Assigned | Status |
+
+Optional (Advanced UI):
+
+👉 Toggle View:
+
+Table view
+Kanban board
+📅 5. VAT & CORPORATE TAX SCREENS
+4
+Frame: VAT Tracker
+
+Table:
+
+| Client | VAT Period | Due Date | Status | Assigned |
+
+Frame: Corporate Tax
+
+| Client | Financial Year | Deadline | Status |
+
+🎨 Status Colors:
+Green → Filed
+Yellow → In Progress
+Red → Overdue
+⚙️ 6. SETTINGS (SUPER ADMIN)
+4
+Frame: Settings
+Tabs:
+General
+Tax Settings
+Users
+Roles & Permissions
+🔐 Role & Permission UI
+Role List:
+
+| Role | Users | Actions |
+
+Edit Role Panel:
+
+Checklist style:
+
+[✓] Create Client
+[✓] Edit Client
+ Delete Client
+[✓] Assign Task
+ Manage Users
+🧭 USER FLOW (IMPORTANT FOR FIGMA PROTOTYPE)
+Login
+Dashboard
+→ Click Client
+→ View Profile
+→ Assign Task
+→ Track VAT
+✨ FINAL TOUCHES (Make it Premium)
+Smooth hover effects
+Subtle shadows
+Consistent spacing (8px system)
+Rounded corners (12–16px)
+Icons (use Lucide / Heroicons)

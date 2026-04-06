@@ -1,22 +1,33 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Tax & Accounting Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: clients
+    description: Client management
+  - name: tasks
+    description: Task management
+  - name: vat
+    description: VAT tracking
+  - name: corporate-tax
+    description: Corporate tax tracking
+  - name: dashboard
+    description: Dashboard summaries
+  - name: users
+    description: User management
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +35,466 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/upcoming-deadlines:
+    get:
+      operationId: getUpcomingDeadlines
+      tags: [dashboard]
+      summary: Get upcoming deadlines
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Upcoming deadlines list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deadline"
+
+  /dashboard/alerts:
+    get:
+      operationId: getDashboardAlerts
+      tags: [dashboard]
+      summary: Get dashboard alerts
+      responses:
+        "200":
+          description: Alerts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List all clients
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: assignedTo
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a new client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "201":
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get client by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    put:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "200":
+          description: Client updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Delete a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Client deleted
+
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List all tasks
+      parameters:
+        - name: assignedTo
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get task by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    put:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Task deleted
+
+  /vat:
+    get:
+      operationId: listVatRecords
+      tags: [vat]
+      summary: List VAT records
+      parameters:
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of VAT records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VatRecord"
+    post:
+      operationId: createVatRecord
+      tags: [vat]
+      summary: Create a VAT record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVatRecordBody"
+      responses:
+        "201":
+          description: VAT record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VatRecord"
+
+  /vat/{id}:
+    put:
+      operationId: updateVatRecord
+      tags: [vat]
+      summary: Update a VAT record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVatRecordBody"
+      responses:
+        "200":
+          description: VAT record updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VatRecord"
+
+  /corporate-tax:
+    get:
+      operationId: listCorporateTax
+      tags: [corporate-tax]
+      summary: List corporate tax records
+      parameters:
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of corporate tax records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CorporateTaxRecord"
+    post:
+      operationId: createCorporateTaxRecord
+      tags: [corporate-tax]
+      summary: Create a corporate tax record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCorporateTaxRecordBody"
+      responses:
+        "201":
+          description: Corporate tax record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorporateTaxRecord"
+
+  /corporate-tax/{id}:
+    put:
+      operationId: updateCorporateTaxRecord
+      tags: [corporate-tax]
+      summary: Update a corporate tax record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCorporateTaxRecordBody"
+      responses:
+        "200":
+          description: Corporate tax record updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorporateTaxRecord"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: User deleted
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +505,385 @@ components:
       required:
         - status
 
+    DashboardSummary:
+      type: object
+      properties:
+        totalClients:
+          type: integer
+        pendingTasks:
+          type: integer
+        overdueTasks:
+          type: integer
+        completedTasks:
+          type: integer
+        vatDueThisMonth:
+          type: integer
+        corporateTaxDueThisMonth:
+          type: integer
+      required:
+        - totalClients
+        - pendingTasks
+        - overdueTasks
+        - completedTasks
+        - vatDueThisMonth
+        - corporateTaxDueThisMonth
+
+    Deadline:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientName:
+          type: string
+        clientId:
+          type: integer
+        type:
+          type: string
+          enum: [VAT, CorporateTax, Task]
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Pending, InProgress, Completed, Overdue]
+        assignedTo:
+          type: string
+      required:
+        - id
+        - clientName
+        - clientId
+        - type
+        - dueDate
+        - status
+        - assignedTo
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [Overdue, Upcoming, Completed]
+        message:
+          type: string
+        clientName:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        referenceType:
+          type: string
+      required:
+        - id
+        - type
+        - message
+        - clientName
+        - dueDate
+        - referenceType
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+          enum: [UK, UAE]
+        vatNumber:
+          type: string
+        corporateTaxStatus:
+          type: string
+          enum: [Active, Inactive, Pending]
+        status:
+          type: string
+          enum: [Active, Inactive]
+        assignedTo:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - country
+        - status
+        - assignedTo
+        - createdAt
+
+    CreateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+          enum: [UK, UAE]
+        vatNumber:
+          type: string
+        corporateTaxStatus:
+          type: string
+          enum: [Active, Inactive, Pending]
+        status:
+          type: string
+          enum: [Active, Inactive]
+        assignedTo:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+      required:
+        - name
+        - country
+        - status
+        - assignedTo
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        type:
+          type: string
+          enum: [VAT, CorporateTax, General, Compliance, Filing]
+        dueDate:
+          type: string
+          format: date
+        assignedTo:
+          type: string
+        status:
+          type: string
+          enum: [Pending, InProgress, Completed, Overdue]
+        priority:
+          type: string
+          enum: [Low, Medium, High, Critical]
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - clientId
+        - clientName
+        - type
+        - dueDate
+        - assignedTo
+        - status
+        - priority
+        - createdAt
+
+    CreateTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        clientId:
+          type: integer
+        type:
+          type: string
+          enum: [VAT, CorporateTax, General, Compliance, Filing]
+        dueDate:
+          type: string
+          format: date
+        assignedTo:
+          type: string
+        status:
+          type: string
+          enum: [Pending, InProgress, Completed, Overdue]
+        priority:
+          type: string
+          enum: [Low, Medium, High, Critical]
+        description:
+          type: string
+      required:
+        - title
+        - clientId
+        - type
+        - dueDate
+        - assignedTo
+        - status
+        - priority
+
+    VatRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        vatPeriod:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Filed, InProgress, Overdue, Pending]
+        assignedTo:
+          type: string
+        filedDate:
+          type: string
+          format: date
+        amount:
+          type: number
+      required:
+        - id
+        - clientId
+        - clientName
+        - vatPeriod
+        - dueDate
+        - status
+        - assignedTo
+
+    CreateVatRecordBody:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        vatPeriod:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Filed, InProgress, Overdue, Pending]
+        assignedTo:
+          type: string
+        filedDate:
+          type: string
+          format: date
+        amount:
+          type: number
+      required:
+        - clientId
+        - vatPeriod
+        - dueDate
+        - status
+        - assignedTo
+
+    CorporateTaxRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        financialYear:
+          type: string
+        deadline:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Filed, InProgress, Overdue, Pending]
+        assignedTo:
+          type: string
+        filedDate:
+          type: string
+          format: date
+        taxAmount:
+          type: number
+      required:
+        - id
+        - clientId
+        - clientName
+        - financialYear
+        - deadline
+        - status
+        - assignedTo
+
+    CreateCorporateTaxRecordBody:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        financialYear:
+          type: string
+        deadline:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Filed, InProgress, Overdue, Pending]
+        assignedTo:
+          type: string
+        filedDate:
+          type: string
+          format: date
+        taxAmount:
+          type: number
+      required:
+        - clientId
+        - financialYear
+        - deadline
+        - status
+        - assignedTo
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [SuperAdmin, Admin, Manager, Employee]
+        status:
+          type: string
+          enum: [Active, Inactive]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - status
+        - createdAt
+
+    CreateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [SuperAdmin, Admin, Manager, Employee]
+        status:
+          type: string
+          enum: [Active, Inactive]
+      required:
+        - name
+        - email
+        - role
+        - status
