@@ -107,7 +107,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@taxfirm.co.uk"
+                placeholder="you@alliancestreet.ae"
                 autoComplete="email"
                 className="w-full px-3.5 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
               />
@@ -144,19 +144,6 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-8 p-4 rounded-xl border border-border bg-muted/40">
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Demo credentials</p>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Super Admin</span>
-                <span className="font-mono text-foreground">sarah@taxfirm.co.uk · admin123</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Employee</span>
-                <span className="font-mono text-foreground">URUJ@GMAIL.COM · uruj123</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -783,11 +783,25 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Sarah Mitchell", email: "sarah@taxfirm.co.uk", role: "SuperAdmin", status: "Active", defaultPassword: "admin123" },
+  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", role: "SuperAdmin", status: "Active", defaultPassword: "admin123" },
   { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
 
+// Old email → new email migrations (run once)
+const EMAIL_MIGRATIONS: Array<{ from: string; to: { name: string; email: string } }> = [
+  { from: "sarah@taxfirm.co.uk", to: { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae" } },
+];
+
 export async function seedIfEmpty() {
+  // Run any email/name migrations first
+  for (const migration of EMAIL_MIGRATIONS) {
+    const [old] = await db.select().from(usersTable).where(eq(usersTable.email, migration.from));
+    if (old) {
+      await db.update(usersTable).set({ name: migration.to.name, email: migration.to.email }).where(eq(usersTable.id, old.id));
+      console.log(`[seed] Migrated user: ${migration.from} → ${migration.to.email}`);
+    }
+  }
+
   // Always sync users — add any missing ones regardless of other data, and ensure passwords are set
   const existingUsers = await db.select().from(usersTable);
   const existingByEmail = new Map(existingUsers.map(u => [u.email.toLowerCase(), u]));
