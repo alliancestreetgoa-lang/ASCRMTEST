@@ -172,18 +172,54 @@ export default function Clients() {
               className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <select value={country} onChange={e => setCountry(e.target.value)}
-            className="px-3 py-2 text-sm border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20">
-            <option value="">All Countries</option>
-            <option value="UK">UK</option>
-            <option value="UAE">UAE</option>
-          </select>
-          <select value={status} onChange={e => setStatus(e.target.value)}
-            className="px-3 py-2 text-sm border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20">
-            <option value="">All Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+
+          {/* Country filter chips */}
+          <div className="flex items-center gap-1.5">
+            {(["", "UK", "UAE"] as const).map((val) => {
+              const label = val === "" ? "All" : val;
+              const active = country === val;
+              return (
+                <button
+                  key={val}
+                  onClick={() => setCountry(val)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-white text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="w-px h-6 bg-border" />
+
+          {/* Status filter chips */}
+          <div className="flex items-center gap-1.5">
+            {(["", "Active", "Inactive"] as const).map((val) => {
+              const label = val === "" ? "All" : val;
+              const active = status === val;
+              const colorClass = active
+                ? val === "Active"
+                  ? "bg-emerald-600 text-white border-emerald-600"
+                  : val === "Inactive"
+                  ? "bg-slate-500 text-white border-slate-500"
+                  : "bg-primary text-primary-foreground border-primary"
+                : "bg-white text-muted-foreground border-border hover:border-primary/50 hover:text-foreground";
+              return (
+                <button
+                  key={val}
+                  onClick={() => setStatus(val)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${colorClass}`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
           <button onClick={openCreate}
             className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" />
