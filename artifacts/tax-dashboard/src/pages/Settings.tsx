@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Trash2, Shield, Check } from "lucide-react";
 import type { User } from "@workspace/api-client-react";
 import { toast } from "sonner";
+import { IS_SUPER_ADMIN } from "@/lib/currentUser";
 
 const settingsTabs = ["General", "Tax Settings", "Users", "Roles & Permissions"];
 
@@ -218,13 +219,15 @@ export default function Settings() {
 
         {tab === "Users" && (
           <div className="space-y-4">
-            <div className="flex justify-end">
-              <button onClick={() => setShowUserForm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90">
-                <Plus className="w-4 h-4" />
-                Add User
-              </button>
-            </div>
+            {IS_SUPER_ADMIN && (
+              <div className="flex justify-end">
+                <button onClick={() => setShowUserForm(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90">
+                  <Plus className="w-4 h-4" />
+                  Add User
+                </button>
+              </div>
+            )}
             <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
               {isLoading ? (
                 <div className="p-6 space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />)}</div>
@@ -237,7 +240,7 @@ export default function Settings() {
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Role</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Status</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Added</th>
-                      <th className="px-4 py-3.5"></th>
+                      {IS_SUPER_ADMIN && <th className="px-4 py-3.5"></th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -258,15 +261,17 @@ export default function Settings() {
                         </td>
                         <td className="px-4 py-3.5"><StatusBadge status={u.status} /></td>
                         <td className="px-4 py-3.5 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
-                        <td className="px-4 py-3.5">
-                          <button onClick={() => deleteUser.mutate({ id: u.id })}
-                            className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
+                        {IS_SUPER_ADMIN && (
+                          <td className="px-4 py-3.5">
+                            <button onClick={() => deleteUser.mutate({ id: u.id })}
+                              className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
-                    {(!users || users.length === 0) && <tr><td colSpan={6} className="px-5 py-12 text-center text-muted-foreground">No users</td></tr>}
+                    {(!users || users.length === 0) && <tr><td colSpan={IS_SUPER_ADMIN ? 6 : 5} className="px-5 py-12 text-center text-muted-foreground">No users</td></tr>}
                   </tbody>
                 </table>
               )}
@@ -299,7 +304,9 @@ export default function Settings() {
                       </td>
                       <td className="px-4 py-3.5 text-muted-foreground">{r.users}</td>
                       <td className="px-4 py-3.5">
-                        <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(r.name); }}>Edit</button>
+                        {IS_SUPER_ADMIN && (
+                          <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(r.name); }}>Edit</button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -319,8 +326,10 @@ export default function Settings() {
                     {allPermissions.map(perm => {
                       const has = (rolePermissions[editRole] ?? []).includes(perm);
                       return (
-                        <button key={perm} onClick={() => togglePermission(editRole, perm)}
-                          className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors cursor-pointer text-left">
+                        <button key={perm}
+                          onClick={() => IS_SUPER_ADMIN && togglePermission(editRole, perm)}
+                          disabled={!IS_SUPER_ADMIN}
+                          className={`w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors text-left ${IS_SUPER_ADMIN ? "hover:bg-muted/20 cursor-pointer" : "cursor-default opacity-80"}`}>
                           <span className="text-sm font-medium">{perm}</span>
                           <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors shrink-0 ${
                             has ? "bg-primary border-primary" : "border-border bg-white"
@@ -330,12 +339,14 @@ export default function Settings() {
                         </button>
                       );
                     })}
-                    <div className="pt-3 flex justify-end">
-                      <button onClick={() => savePermissions(editRole)}
-                        className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90">
-                        Save Permissions
-                      </button>
-                    </div>
+                    {IS_SUPER_ADMIN && (
+                      <div className="pt-3 flex justify-end">
+                        <button onClick={() => savePermissions(editRole)}
+                          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90">
+                          Save Permissions
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (

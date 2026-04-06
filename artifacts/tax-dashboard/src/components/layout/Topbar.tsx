@@ -4,8 +4,7 @@ import { useLocation } from "wouter";
 import { useListClients, useListTasks } from "@workspace/api-client-react";
 import { useRegion, type Region } from "@/contexts/RegionContext";
 import { toast } from "sonner";
-
-const CURRENT_USER = { id: 1, name: "Sarah Mitchell", role: "SuperAdmin", initials: "SM" };
+import { CURRENT_USER } from "@/lib/currentUser";
 
 function SearchDropdown({ query, onClose }: { query: string; onClose: () => void }) {
   const [, navigate] = useLocation();
