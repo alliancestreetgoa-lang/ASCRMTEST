@@ -4,7 +4,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import {
-  useListClients, useCreateClient, useDeleteClient,
+  useListClients, useCreateClient, useUpdateClient, useDeleteClient,
   getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -114,21 +114,33 @@ export default function Clients() {
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("");
   const [status, setStatus] = useState("");
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: clients, isLoading } = useListClients({ search, country, status });
-  const createClient = useCreateClient({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListClientsQueryKey() }) } });
-  const deleteClient = useDeleteClient({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListClientsQueryKey() }) } });
+  const invalidate = () => qc.invalidateQueries({ queryKey: getListClientsQueryKey() });
+  const createClient = useCreateClient({ mutation: { onSuccess: invalidate } });
+  const updateClient = useUpdateClient({ mutation: { onSuccess: invalidate } });
+  const deleteClient = useDeleteClient({ mutation: { onSuccess: invalidate } });
+
+  const openCreate = () => { setEditingClient(null); setShowForm(true); };
+  const openEdit = (client: Client) => { setEditingClient(client); setShowForm(true); };
+  const closeForm = () => { setEditingClient(null); setShowForm(false); };
 
   return (
     <AppLayout title="Clients">
       {showForm && (
         <ClientForm
-          onClose={() => setShowForm(false)}
+          initial={editingClient ?? undefined}
+          onClose={closeForm}
           onSave={(data) => {
-            createClient.mutate({ data: data as Parameters<typeof createClient.mutate>[0]["data"] });
-            setShowForm(false);
+            if (editingClient) {
+              updateClient.mutate({ id: editingClient.id, data: data as Parameters<typeof updateClient.mutate>[0]["data"] });
+            } else {
+              createClient.mutate({ data: data as Parameters<typeof createClient.mutate>[0]["data"] });
+            }
+            closeForm();
           }}
         />
       )}
@@ -156,7 +168,7 @@ export default function Clients() {
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-          <button onClick={() => setShowForm(true)}
+          <button onClick={openCreate}
             className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" />
             Add Client
@@ -206,7 +218,7 @@ export default function Clients() {
                             className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors" title="View">
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="p-1.5 hover:bg-yellow-50 text-yellow-600 rounded-lg transition-colors" title="Edit">
+                          <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-yellow-50 text-yellow-600 rounded-lg transition-colors" title="Edit">
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
