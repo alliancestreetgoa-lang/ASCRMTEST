@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, count, and, lt } from "drizzle-orm";
+import { eq, count, and, lt, ne, or, sql } from "drizzle-orm";
 import { db, clientsTable, tasksTable, vatRecordsTable, corporateTaxTable } from "@workspace/db";
 import {
   GetDashboardSummaryResponse,
@@ -15,8 +15,14 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
 
   const [totalClientsResult] = await db.select({ count: count() }).from(clientsTable);
   const [pendingTasksResult] = await db.select({ count: count() }).from(tasksTable).where(eq(tasksTable.status, "Pending"));
-  const [overdueTasksResult] = await db.select({ count: count() }).from(tasksTable).where(eq(tasksTable.status, "Overdue"));
   const [completedTasksResult] = await db.select({ count: count() }).from(tasksTable).where(eq(tasksTable.status, "Completed"));
+
+  // Overdue = explicit Overdue tasks + VAT records past due (not filed) + CT records past deadline (not filed)
+  const [overdueTasksResult] = await db.select({ count: count() }).from(tasksTable).where(eq(tasksTable.status, "Overdue"));
+  const [overdueVatResult] = await db.select({ count: count() }).from(vatRecordsTable)
+    .where(and(sql`${vatRecordsTable.dueDate} < ${today}`, ne(vatRecordsTable.status, "Filed")));
+  const [overdueCtResult] = await db.select({ count: count() }).from(corporateTaxTable)
+    .where(and(sql`${corporateTaxTable.deadline} < ${today}`, ne(corporateTaxTable.status, "Filed")));
 
   const thisMonthEnd = new Date();
   thisMonthEnd.setMonth(thisMonthEnd.getMonth() + 1);
@@ -24,14 +30,19 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
   const monthEnd = thisMonthEnd.toISOString().split("T")[0];
 
   const [vatDueResult] = await db.select({ count: count() }).from(vatRecordsTable)
-    .where(and(eq(vatRecordsTable.status, "Pending")));
+    .where(eq(vatRecordsTable.status, "Pending"));
   const [ctDueResult] = await db.select({ count: count() }).from(corporateTaxTable)
-    .where(and(eq(corporateTaxTable.status, "Pending")));
+    .where(eq(corporateTaxTable.status, "Pending"));
+
+  const totalOverdue =
+    Number(overdueTasksResult?.count ?? 0) +
+    Number(overdueVatResult?.count ?? 0) +
+    Number(overdueCtResult?.count ?? 0);
 
   const summary = {
     totalClients: Number(totalClientsResult?.count ?? 0),
     pendingTasks: Number(pendingTasksResult?.count ?? 0),
-    overdueTasks: Number(overdueTasksResult?.count ?? 0),
+    overdueTasks: totalOverdue,
     completedTasks: Number(completedTasksResult?.count ?? 0),
     vatDueThisMonth: Number(vatDueResult?.count ?? 0),
     corporateTaxDueThisMonth: Number(ctDueResult?.count ?? 0),

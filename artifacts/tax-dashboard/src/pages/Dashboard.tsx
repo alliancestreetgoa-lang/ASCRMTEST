@@ -74,8 +74,8 @@ export default function Dashboard() {
             value={summary?.overdueTasks}
             label="Overdue"
             color="hsl(0 84% 55%)"
-            sub="Requires attention"
-            href="/tasks?status=Overdue"
+            sub="Tasks, VAT & Corp. Tax"
+            href="/corporate-tax"
           />
           <StatCard
             icon={CheckCircle}
