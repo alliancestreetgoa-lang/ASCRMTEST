@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, SQL } from "drizzle-orm";
+import { eq, and, SQL, inArray } from "drizzle-orm";
 import { db, vatRecordsTable, clientsTable } from "@workspace/db";
 import {
   ListVatRecordsQueryParams,
@@ -19,10 +19,22 @@ router.get("/vat", async (req, res): Promise<void> => {
     return;
   }
 
-  const { clientId, status } = parsed.data;
+  const { clientId, status, country } = parsed.data;
+
+  let clientIds: number[] | undefined;
+  if (country) {
+    const filteredClients = await db.select({ id: clientsTable.id }).from(clientsTable).where(eq(clientsTable.country, country));
+    clientIds = filteredClients.map(c => c.id);
+    if (clientIds.length === 0) {
+      res.json(ListVatRecordsResponse.parse([]));
+      return;
+    }
+  }
+
   const conditions: SQL[] = [];
   if (clientId != null) conditions.push(eq(vatRecordsTable.clientId, clientId));
   if (status) conditions.push(eq(vatRecordsTable.status, status));
+  if (clientIds) conditions.push(inArray(vatRecordsTable.clientId, clientIds));
 
   const rawRecords = conditions.length > 0
     ? await db.select().from(vatRecordsTable).where(and(...conditions)).orderBy(vatRecordsTable.dueDate, vatRecordsTable.id)

@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils";
 import {
   useListVatRecords, useCreateVatRecord, useUpdateVatRecord, useListClients,
 } from "@workspace/api-client-react";
+import { useRegion } from "@/contexts/RegionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import type { VatRecord } from "@workspace/api-client-react";
@@ -94,6 +95,7 @@ function VatForm({ initial, clients, onClose, onSave }: {
 
 export default function Vat() {
   const qc = useQueryClient();
+  const { countryParam } = useRegion();
   const [filterStatus, setFilterStatus] = useState("");
   const [filterClientStatus, setFilterClientStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -101,7 +103,7 @@ export default function Vat() {
   const [editingRecord, setEditingRecord] = useState<VatRecord | null>(null);
   const [page, setPage] = useState(1);
 
-  const { data: records, isLoading } = useListVatRecords({ status: filterStatus });
+  const { data: records, isLoading } = useListVatRecords({ status: filterStatus, ...(countryParam ? { country: countryParam } : {}) });
   const { data: clients } = useListClients({});
 
   const clientStatusMap = useMemo(() => {

@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils";
 import {
   useListCorporateTax, useCreateCorporateTaxRecord, useUpdateCorporateTaxRecord, useListClients,
 } from "@workspace/api-client-react";
+import { useRegion } from "@/contexts/RegionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import type { CorporateTaxRecord } from "@workspace/api-client-react";
@@ -94,6 +95,7 @@ function CTForm({ initial, clients, onClose, onSave }: {
 
 export default function CorporateTax() {
   const qc = useQueryClient();
+  const { countryParam } = useRegion();
   const [filterStatus, setFilterStatus] = useState("");
   const [filterClientStatus, setFilterClientStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -101,7 +103,7 @@ export default function CorporateTax() {
   const [editingRecord, setEditingRecord] = useState<CorporateTaxRecord | null>(null);
   const [page, setPage] = useState(1);
 
-  const { data: records, isLoading } = useListCorporateTax({ status: filterStatus });
+  const { data: records, isLoading } = useListCorporateTax({ status: filterStatus, ...(countryParam ? { country: countryParam } : {}) });
   const { data: clients } = useListClients({});
 
   const clientStatusMap = useMemo(() => {

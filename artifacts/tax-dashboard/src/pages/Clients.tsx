@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import {
   useListClients, useCreateClient, useUpdateClient, useDeleteClient,
 } from "@workspace/api-client-react";
+import { useRegion } from "@/contexts/RegionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Eye, Pencil, Trash2, X, Globe } from "lucide-react";
 import type { Client } from "@workspace/api-client-react";
@@ -114,9 +115,15 @@ function ClientForm({ initial, onClose, onSave }: {
 export default function Clients() {
   const qc = useQueryClient();
   const [, navigate] = useLocation();
+  const { region, setRegion } = useRegion();
   const [search, setSearch] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(() => region === "All" ? "" : region);
   const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    setCountry(region === "All" ? "" : region);
+  }, [region]);
+
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -183,7 +190,7 @@ export default function Clients() {
               return (
                 <button
                   key={val}
-                  onClick={() => setCountry(val)}
+                  onClick={() => { setCountry(val); setRegion(val === "" ? "All" : val); }}
                   className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${
                     active
                       ? "bg-primary text-primary-foreground border-primary"

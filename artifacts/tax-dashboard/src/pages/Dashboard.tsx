@@ -11,6 +11,7 @@ import {
   FileText, Building2, Calendar, TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
+import { useRegion } from "@/contexts/RegionContext";
 
 function StatCard({ icon: Icon, value, label, color, sub, href }: {
   icon: React.ElementType;
@@ -44,9 +45,12 @@ function StatCard({ icon: Icon, value, label, color, sub, href }: {
 }
 
 export default function Dashboard() {
-  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
-  const { data: deadlines, isLoading: loadingDeadlines } = useGetUpcomingDeadlines({ limit: 8 });
-  const { data: alerts, isLoading: loadingAlerts } = useGetDashboardAlerts();
+  const { countryParam } = useRegion();
+  const countryParams = countryParam ? { country: countryParam } : undefined;
+
+  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary(countryParams);
+  const { data: deadlines, isLoading: loadingDeadlines } = useGetUpcomingDeadlines({ limit: 8, ...(countryParam ? { country: countryParam } : {}) });
+  const { data: alerts, isLoading: loadingAlerts } = useGetDashboardAlerts(countryParams);
 
   return (
     <AppLayout title="Dashboard">

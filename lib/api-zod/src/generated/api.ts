@@ -17,6 +17,10 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Get dashboard summary stats
  */
+export const GetDashboardSummaryQueryParams = zod.object({
+  country: zod.enum(["UK", "UAE"]).optional(),
+});
+
 export const GetDashboardSummaryResponse = zod.object({
   totalClients: zod.number(),
   pendingTasks: zod.number(),
@@ -33,6 +37,7 @@ export const getUpcomingDeadlinesQueryLimitDefault = 10;
 
 export const GetUpcomingDeadlinesQueryParams = zod.object({
   limit: zod.coerce.number().default(getUpcomingDeadlinesQueryLimitDefault),
+  country: zod.enum(["UK", "UAE"]).optional(),
 });
 
 export const GetUpcomingDeadlinesResponseItem = zod.object({
@@ -51,6 +56,10 @@ export const GetUpcomingDeadlinesResponse = zod.array(
 /**
  * @summary Get dashboard alerts
  */
+export const GetDashboardAlertsQueryParams = zod.object({
+  country: zod.enum(["UK", "UAE"]).optional(),
+});
+
 export const GetDashboardAlertsResponseItem = zod.object({
   id: zod.number(),
   type: zod.enum(["Overdue", "Upcoming", "Completed"]),
@@ -269,6 +278,7 @@ export const DeleteTaskParams = zod.object({
 export const ListVatRecordsQueryParams = zod.object({
   clientId: zod.coerce.number().optional(),
   status: zod.coerce.string().optional(),
+  country: zod.enum(["UK", "UAE"]).optional(),
 });
 
 export const ListVatRecordsResponseItem = zod.object({
@@ -332,6 +342,7 @@ export const UpdateVatRecordResponse = zod.object({
 export const ListCorporateTaxQueryParams = zod.object({
   clientId: zod.coerce.number().optional(),
   status: zod.coerce.string().optional(),
+  country: zod.enum(["UK", "UAE"]).optional(),
 });
 
 export const ListCorporateTaxResponseItem = zod.object({

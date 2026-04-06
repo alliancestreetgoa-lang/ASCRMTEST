@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, SQL } from "drizzle-orm";
+import { eq, and, SQL, inArray } from "drizzle-orm";
 import { db, corporateTaxTable, clientsTable } from "@workspace/db";
 import {
   ListCorporateTaxQueryParams,
@@ -19,10 +19,22 @@ router.get("/corporate-tax", async (req, res): Promise<void> => {
     return;
   }
 
-  const { clientId, status } = parsed.data;
+  const { clientId, status, country } = parsed.data;
+
+  let clientIds: number[] | undefined;
+  if (country) {
+    const filteredClients = await db.select({ id: clientsTable.id }).from(clientsTable).where(eq(clientsTable.country, country));
+    clientIds = filteredClients.map(c => c.id);
+    if (clientIds.length === 0) {
+      res.json(ListCorporateTaxResponse.parse([]));
+      return;
+    }
+  }
+
   const conditions: SQL[] = [];
   if (clientId != null) conditions.push(eq(corporateTaxTable.clientId, clientId));
   if (status) conditions.push(eq(corporateTaxTable.status, status));
+  if (clientIds) conditions.push(inArray(corporateTaxTable.clientId, clientIds));
 
   const rawRecords = conditions.length > 0
     ? await db.select().from(corporateTaxTable).where(and(...conditions)).orderBy(corporateTaxTable.deadline, corporateTaxTable.id)

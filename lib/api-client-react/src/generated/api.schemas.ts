@@ -355,8 +355,17 @@ export interface CreateUserBody {
   status: CreateUserBodyStatus;
 }
 
+export type GetDashboardSummaryParams = {
+  country?: string;
+};
+
+export type GetDashboardAlertsParams = {
+  country?: string;
+};
+
 export type GetUpcomingDeadlinesParams = {
   limit?: number;
+  country?: string;
 };
 
 export type ListClientsParams = {
@@ -376,9 +385,11 @@ export type ListTasksParams = {
 export type ListVatRecordsParams = {
   clientId?: number;
   status?: string;
+  country?: string;
 };
 
 export type ListCorporateTaxParams = {
   clientId?: number;
   status?: string;
+  country?: string;
 };

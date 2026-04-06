@@ -1,7 +1,8 @@
 import { Bell, Search, ChevronDown } from "lucide-react";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useListClients, useListTasks } from "@workspace/api-client-react";
+import { useRegion, type Region } from "@/contexts/RegionContext";
 
 function SearchDropdown({ query, onClose }: { query: string; onClose: () => void }) {
   const [, navigate] = useLocation();
@@ -62,7 +63,7 @@ function SearchDropdown({ query, onClose }: { query: string; onClose: () => void
 
 export default function Topbar({ title }: { title: string }) {
   const [, navigate] = useLocation();
-  const [country, setCountry] = useState("All");
+  const { region, setRegion } = useRegion();
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,8 +105,8 @@ export default function Topbar({ title }: { title: string }) {
       <div className="flex items-center gap-3 ml-auto">
         <div className="relative">
           <select
-            value={country}
-            onChange={e => setCountry(e.target.value)}
+            value={region}
+            onChange={e => setRegion(e.target.value as Region)}
             className="appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="All">All Regions</option>
