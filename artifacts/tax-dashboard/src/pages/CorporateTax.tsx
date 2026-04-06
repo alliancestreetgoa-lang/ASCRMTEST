@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
+import UserSelector from "@/components/UserSelector";
 import { formatDate } from "@/lib/utils";
 import {
   useListCorporateTax, useCreateCorporateTaxRecord, useUpdateCorporateTaxRecord, useListClients,
@@ -72,8 +73,10 @@ function CTForm({ initial, clients, onClose, onSave }: {
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Assigned To *</label>
-            <input value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })}
-              className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            <UserSelector
+              value={form.assignedTo}
+              onChange={v => setForm({ ...form, assignedTo: v })}
+            />
           </div>
         </div>
         <div className="px-6 py-4 border-t flex justify-end gap-3">

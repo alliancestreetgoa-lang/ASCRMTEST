@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
+import UserSelector from "@/components/UserSelector";
 import { formatDate } from "@/lib/utils";
 import {
   useListClients, useCreateClient, useUpdateClient, useDeleteClient,
@@ -76,8 +77,10 @@ function ClientForm({ initial, onClose, onSave }: {
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">Assigned To *</label>
-              <input value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })}
-                className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <UserSelector
+                value={form.assignedTo}
+                onChange={v => setForm({ ...form, assignedTo: v })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
