@@ -95,6 +95,7 @@ function VatForm({ initial, clients, onClose, onSave }: {
 export default function Vat() {
   const qc = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterClientStatus, setFilterClientStatus] = useState("");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<VatRecord | null>(null);
@@ -102,6 +103,12 @@ export default function Vat() {
 
   const { data: records, isLoading } = useListVatRecords({ status: filterStatus });
   const { data: clients } = useListClients({});
+
+  const clientStatusMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const c of (clients ?? [])) map[c.id] = c.status;
+    return map;
+  }, [clients]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/vat"] });
 
@@ -129,10 +136,12 @@ export default function Vat() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return (records ?? []).filter(r =>
-      !q || r.clientName.toLowerCase().includes(q) || r.vatPeriod.toLowerCase().includes(q)
-    );
-  }, [records, search]);
+    return (records ?? []).filter(r => {
+      if (q && !r.clientName.toLowerCase().includes(q) && !r.vatPeriod.toLowerCase().includes(q)) return false;
+      if (filterClientStatus && clientStatusMap[r.clientId] !== filterClientStatus) return false;
+      return true;
+    });
+  }, [records, search, filterClientStatus, clientStatusMap]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -173,6 +182,12 @@ export default function Vat() {
             <option value="InProgress">In Progress</option>
             <option value="Filed">Filed</option>
             <option value="Overdue">Overdue</option>
+          </select>
+          <select value={filterClientStatus} onChange={e => { setFilterClientStatus(e.target.value); setPage(1); }}
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+            <option value="">All Clients</option>
+            <option value="Active">Active Clients</option>
+            <option value="Inactive">Inactive Clients</option>
           </select>
           <button onClick={() => { setEditingRecord(null); setShowForm(true); }}
             className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90">
