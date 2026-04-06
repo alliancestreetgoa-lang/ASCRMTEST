@@ -783,7 +783,7 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", role: "SuperAdmin", status: "Active", defaultPassword: "admin123" },
+  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
   { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
 
