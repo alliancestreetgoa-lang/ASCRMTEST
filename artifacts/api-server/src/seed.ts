@@ -1,5 +1,10 @@
 import { db, clientsTable, vatRecordsTable, corporateTaxTable, usersTable } from "@workspace/db";
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
+import { createHash } from "crypto";
+
+function hashPassword(plain: string) {
+  return createHash("sha256").update(plain).digest("hex");
+}
 
 const CLIENTS = [
   { name: "ADLAI SYSTEMS INFORMATION TECHNOLOGY L.L.C", country: "UAE", vatNumber: null, corporateTaxStatus: null, status: "Inactive", assignedTo: "Unassigned" },
@@ -778,18 +783,22 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Sarah Mitchell", email: "sarah@taxfirm.co.uk", role: "SuperAdmin", status: "Active" },
-  { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active" },
+  { name: "Sarah Mitchell", email: "sarah@taxfirm.co.uk", role: "SuperAdmin", status: "Active", defaultPassword: "admin123" },
+  { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
 
 export async function seedIfEmpty() {
-  // Always sync users — add any missing ones regardless of other data
-  const existingUsers = await db.select({ email: usersTable.email }).from(usersTable);
-  const existingEmails = new Set(existingUsers.map(u => u.email.toLowerCase()));
+  // Always sync users — add any missing ones regardless of other data, and ensure passwords are set
+  const existingUsers = await db.select().from(usersTable);
+  const existingByEmail = new Map(existingUsers.map(u => [u.email.toLowerCase(), u]));
   for (const user of SEED_USERS) {
-    if (!existingEmails.has(user.email.toLowerCase())) {
-      await db.insert(usersTable).values(user);
+    const existing = existingByEmail.get(user.email.toLowerCase());
+    if (!existing) {
+      await db.insert(usersTable).values({ ...user, password: hashPassword(user.defaultPassword) });
       console.log(`[seed] Added user: ${user.name}`);
+    } else if (!existing.password) {
+      await db.update(usersTable).set({ password: hashPassword(user.defaultPassword) }).where(eq(usersTable.id, existing.id));
+      console.log(`[seed] Set default password for: ${user.name}`);
     }
   }
 

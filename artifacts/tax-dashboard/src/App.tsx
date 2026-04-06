@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RegionProvider } from "@/contexts/RegionContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import ClientProfile from "@/pages/ClientProfile";
@@ -39,15 +41,25 @@ function Router() {
   );
 }
 
+function AppShell() {
+  const { user } = useAuth();
+  if (!user) return <Login />;
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+      <Router />
+    </WouterRouter>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RegionProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster position="top-right" richColors closeButton />
+          <AuthProvider>
+            <AppShell />
+            <Toaster position="top-right" richColors closeButton />
+          </AuthProvider>
         </RegionProvider>
       </TooltipProvider>
     </QueryClientProvider>

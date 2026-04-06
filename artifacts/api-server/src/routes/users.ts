@@ -71,6 +71,33 @@ router.delete("/users/:id", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
+router.post("/auth/login", async (req, res): Promise<void> => {
+  const { email, password } = req.body as { email?: string; password?: string };
+  if (!email || !password) {
+    res.status(400).json({ error: "Email and password are required" });
+    return;
+  }
+
+  const hashed = hashPassword(password.trim());
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email.trim()));
+
+  if (!user || user.password !== hashed) {
+    res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+  });
+});
+
 router.patch("/users/:id/password", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) {

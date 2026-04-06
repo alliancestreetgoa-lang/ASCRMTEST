@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Trash2, Pencil, Shield, Check, Eye, EyeOff } from "lucide-react";
 import type { User } from "@workspace/api-client-react";
 import { toast } from "sonner";
-import { IS_SUPER_ADMIN } from "@/lib/currentUser";
+import { useAuth } from "@/contexts/AuthContext";
 
 const settingsTabs = ["General", "Tax Settings", "Users", "Roles & Permissions"];
 
@@ -123,6 +123,8 @@ function UserForm({ onClose, onSave, editUser }: {
 }
 
 export default function Settings() {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "SuperAdmin";
   const qc = useQueryClient();
   const [tab, setTab] = useState("Users");
   const [showUserForm, setShowUserForm] = useState(false);
@@ -286,7 +288,7 @@ export default function Settings() {
 
         {tab === "Users" && (
           <div className="space-y-4">
-            {IS_SUPER_ADMIN && (
+            {isSuperAdmin && (
               <div className="flex justify-end">
                 <button onClick={() => setShowUserForm(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90">
@@ -307,7 +309,7 @@ export default function Settings() {
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Role</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Status</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Added</th>
-                      {IS_SUPER_ADMIN && <th className="px-4 py-3.5"></th>}
+                      {isSuperAdmin && <th className="px-4 py-3.5"></th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -328,7 +330,7 @@ export default function Settings() {
                         </td>
                         <td className="px-4 py-3.5"><StatusBadge status={u.status} /></td>
                         <td className="px-4 py-3.5 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
-                        {IS_SUPER_ADMIN && (
+                        {isSuperAdmin && (
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1">
                               <button onClick={() => setEditingUser(u)}
@@ -346,7 +348,7 @@ export default function Settings() {
                         )}
                       </tr>
                     ))}
-                    {(!users || users.length === 0) && <tr><td colSpan={IS_SUPER_ADMIN ? 6 : 5} className="px-5 py-12 text-center text-muted-foreground">No users</td></tr>}
+                    {(!users || users.length === 0) && <tr><td colSpan={isSuperAdmin ? 6 : 5} className="px-5 py-12 text-center text-muted-foreground">No users</td></tr>}
                   </tbody>
                 </table>
               )}
@@ -379,7 +381,7 @@ export default function Settings() {
                       </td>
                       <td className="px-4 py-3.5 text-muted-foreground">{r.users}</td>
                       <td className="px-4 py-3.5">
-                        {IS_SUPER_ADMIN && (
+                        {isSuperAdmin && (
                           <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(r.name); }}>Edit</button>
                         )}
                       </td>
@@ -402,9 +404,9 @@ export default function Settings() {
                       const has = (rolePermissions[editRole] ?? []).includes(perm);
                       return (
                         <button key={perm}
-                          onClick={() => IS_SUPER_ADMIN && togglePermission(editRole, perm)}
-                          disabled={!IS_SUPER_ADMIN}
-                          className={`w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors text-left ${IS_SUPER_ADMIN ? "hover:bg-muted/20 cursor-pointer" : "cursor-default opacity-80"}`}>
+                          onClick={() => isSuperAdmin && togglePermission(editRole, perm)}
+                          disabled={!isSuperAdmin}
+                          className={`w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors text-left ${isSuperAdmin ? "hover:bg-muted/20 cursor-pointer" : "cursor-default opacity-80"}`}>
                           <span className="text-sm font-medium">{perm}</span>
                           <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors shrink-0 ${
                             has ? "bg-primary border-primary" : "border-border bg-white"
@@ -414,7 +416,7 @@ export default function Settings() {
                         </button>
                       );
                     })}
-                    {IS_SUPER_ADMIN && (
+                    {isSuperAdmin && (
                       <div className="pt-3 flex justify-end">
                         <button onClick={() => savePermissions(editRole)}
                           className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90">

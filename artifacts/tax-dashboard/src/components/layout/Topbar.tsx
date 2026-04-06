@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { useListClients, useListTasks } from "@workspace/api-client-react";
 import { useRegion, type Region } from "@/contexts/RegionContext";
 import { toast } from "sonner";
-import { CURRENT_USER } from "@/lib/currentUser";
+import { useAuth } from "@/contexts/AuthContext";
 
 function SearchDropdown({ query, onClose }: { query: string; onClose: () => void }) {
   const [, navigate] = useLocation();
@@ -64,6 +64,7 @@ function SearchDropdown({ query, onClose }: { query: string; onClose: () => void
 }
 
 function ResetPasswordModal({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -82,7 +83,7 @@ function ResetPasswordModal({ onClose }: { onClose: () => void }) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${CURRENT_USER.id}/password`, {
+      const res = await fetch(`/api/users/${user?.id}/password`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newPassword }),
@@ -123,11 +124,11 @@ function ResetPasswordModal({ onClose }: { onClose: () => void }) {
           <div className="bg-muted/40 rounded-xl px-4 py-3 flex items-center gap-3 mb-1">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
               style={{ background: "hsl(224 76% 33%)" }}>
-              {CURRENT_USER.initials}
+              {user ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "?"}
             </div>
             <div>
-              <div className="text-sm font-medium text-foreground">{CURRENT_USER.name}</div>
-              <div className="text-xs text-muted-foreground">{CURRENT_USER.role}</div>
+              <div className="text-sm font-medium text-foreground">{user?.name}</div>
+              <div className="text-xs text-muted-foreground">{user?.role}</div>
             </div>
           </div>
 
@@ -187,43 +188,14 @@ function ResetPasswordModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function LoggedOutScreen({ onSignIn }: { onSignIn: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(222_47%_11%)]">
-      <div className="flex flex-col items-center gap-6 text-center px-6">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: "hsl(224 76% 45%)" }}>
-          <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        </div>
-        <div>
-          <div className="text-white font-bold text-2xl mb-1">TaxFlow</div>
-          <div className="text-sm" style={{ color: "hsl(215 16% 55%)" }}>Pro Dashboard</div>
-        </div>
-        <div className="mt-2">
-          <div className="text-white font-semibold text-lg mb-1">You've been signed out</div>
-          <div className="text-sm" style={{ color: "hsl(215 16% 55%)" }}>Sign back in to continue managing your clients.</div>
-        </div>
-        <button
-          onClick={onSignIn}
-          className="mt-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: "hsl(224 76% 45%)" }}
-        >
-          Sign back in
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function Topbar({ title }: { title: string }) {
   const [, navigate] = useLocation();
+  const { user, logout } = useAuth();
   const { region, setRegion } = useRegion();
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [loggedOut, setLoggedOut] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -239,7 +211,8 @@ export default function Topbar({ title }: { title: string }) {
     }
   };
 
-  const isSuperAdmin = CURRENT_USER.role === "SuperAdmin";
+  const isSuperAdmin = user?.role === "SuperAdmin";
+  const initials = user ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "?";
 
   return (
     <>
@@ -291,7 +264,7 @@ export default function Topbar({ title }: { title: string }) {
             >
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
                 style={{ background: "hsl(224 76% 33%)" }}>
-                SA
+                {initials}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-150 ${showUserMenu ? "rotate-180" : ""}`} />
             </button>
@@ -302,11 +275,11 @@ export default function Topbar({ title }: { title: string }) {
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
                       style={{ background: "hsl(224 76% 33%)" }}>
-                      SA
+                      {initials}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground truncate">{CURRENT_USER.name}</div>
-                      <div className="text-xs text-muted-foreground">{CURRENT_USER.role}</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{user?.name}</div>
+                      <div className="text-xs text-muted-foreground">{user?.role}</div>
                     </div>
                   </div>
                 </div>
@@ -322,7 +295,7 @@ export default function Topbar({ title }: { title: string }) {
                 )}
                 <div className="my-1 border-t border-border" />
                 <button
-                  onClick={() => { setShowUserMenu(false); navigate("/"); setLoggedOut(true); }}
+                  onClick={() => { setShowUserMenu(false); logout(); }}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
@@ -338,9 +311,6 @@ export default function Topbar({ title }: { title: string }) {
         <ResetPasswordModal onClose={() => setShowResetModal(false)} />
       )}
 
-      {loggedOut && (
-        <LoggedOutScreen onSignIn={() => setLoggedOut(false)} />
-      )}
     </>
   );
 }
