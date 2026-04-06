@@ -777,7 +777,22 @@ const CLIENTS = [
   { clientName: "Yambana International FZE", financialYear: "Jan - Dec 2025", deadline: "2026-09-30", status: "Pending", assignedTo: "Unassigned" }
 ];
 
+const SEED_USERS = [
+  { name: "Sarah Mitchell", email: "sarah@taxfirm.co.uk", role: "SuperAdmin", status: "Active" },
+  { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active" },
+];
+
 export async function seedIfEmpty() {
+  // Always sync users — add any missing ones regardless of other data
+  const existingUsers = await db.select({ email: usersTable.email }).from(usersTable);
+  const existingEmails = new Set(existingUsers.map(u => u.email.toLowerCase()));
+  for (const user of SEED_USERS) {
+    if (!existingEmails.has(user.email.toLowerCase())) {
+      await db.insert(usersTable).values(user);
+      console.log(`[seed] Added user: ${user.name}`);
+    }
+  }
+
   const [{ value: clientCount }] = await db.select({ value: count() }).from(clientsTable);
   if (Number(clientCount) > 0) return;
 
@@ -816,16 +831,6 @@ export async function seedIfEmpty() {
   })).filter(c => c.clientId);
   if (ctToInsert.length > 0) {
     await db.insert(corporateTaxTable).values(ctToInsert);
-  }
-
-  const [{ value: userCount }] = await db.select({ value: count() }).from(usersTable);
-  if (Number(userCount) === 0) {
-    await db.insert(usersTable).values({
-      name: "Sarah Mitchell",
-      email: "sarah@taxfirm.co.uk",
-      role: "SuperAdmin",
-      status: "Active",
-    });
   }
 
   console.log(`[seed] Done: ${CLIENTS.length} clients, ${vatToInsert.length} VAT, ${ctToInsert.length} CT records`);
