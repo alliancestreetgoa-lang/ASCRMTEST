@@ -22,12 +22,7 @@ const defaultRoles: Record<string, string[]> = {
   "Employee": ["Edit Client", "Assign Task"],
 };
 
-const defaultRolesList = [
-  { name: "Super Admin", users: 1, permissions: defaultRoles["Super Admin"] },
-  { name: "Admin", users: 1, permissions: defaultRoles["Admin"] },
-  { name: "Manager", users: 1, permissions: defaultRoles["Manager"] },
-  { name: "Employee", users: 2, permissions: defaultRoles["Employee"] },
-];
+const roleNames = ["Super Admin", "Admin", "Manager", "Employee"];
 
 const allPermissions = ["Create Client", "Edit Client", "Delete Client", "Assign Task", "Manage Users", "View Reports", "Tax Settings"];
 
@@ -285,7 +280,7 @@ export default function Settings() {
   const [permissionsUser, setPermissionsUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<string | null>(null);
   const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(
-    Object.fromEntries(defaultRolesList.map(r => [r.name, [...r.permissions]]))
+    Object.fromEntries(roleNames.map(name => [name, [...(defaultRoles[name] ?? defaultRoles[name === "Super Admin" ? "SuperAdmin" : name] ?? [])]]))
   );
 
   const { data: users, isLoading } = useListUsers();
@@ -548,23 +543,27 @@ export default function Settings() {
                   <th className="px-4 py-3"></th>
                 </tr></thead>
                 <tbody className="divide-y divide-border">
-                  {defaultRolesList.map(r => (
-                    <tr key={r.name} className={`hover:bg-muted/20 transition-colors cursor-pointer ${editRole === r.name ? "bg-primary/5" : ""}`}
-                      onClick={() => setEditRole(r.name)}>
-                      <td className="px-5 py-3.5 font-medium">
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-primary" />
-                          {r.name}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 text-muted-foreground">{r.users}</td>
-                      <td className="px-4 py-3.5">
-                        {isSuperAdmin && (
-                          <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(r.name); }}>Edit</button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {roleNames.map(roleName => {
+                    const dbKey = roleName === "Super Admin" ? "SuperAdmin" : roleName;
+                    const count = (users ?? []).filter(u => u.role === dbKey).length;
+                    return (
+                      <tr key={roleName} className={`hover:bg-muted/20 transition-colors cursor-pointer ${editRole === roleName ? "bg-primary/5" : ""}`}
+                        onClick={() => setEditRole(roleName)}>
+                        <td className="px-5 py-3.5 font-medium">
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-primary" />
+                            {roleName}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 text-muted-foreground">{count}</td>
+                        <td className="px-4 py-3.5">
+                          {isSuperAdmin && (
+                            <button className="text-xs text-primary hover:underline" onClick={e => { e.stopPropagation(); setEditRole(roleName); }}>Edit</button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
