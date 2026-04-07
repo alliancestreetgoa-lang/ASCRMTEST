@@ -7,6 +7,7 @@ import {
   useListCorporateTax, useCreateCorporateTaxRecord, useUpdateCorporateTaxRecord, useListClients,
 } from "@workspace/api-client-react";
 import { useRegion } from "@/contexts/RegionContext";
+import { useCurrency } from "@/lib/currency";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import type { CorporateTaxRecord } from "@workspace/api-client-react";
@@ -20,6 +21,7 @@ function CTForm({ initial, clients, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: unknown) => void;
 }) {
+  const { label } = useCurrency();
   const [form, setForm] = useState({
     clientId: initial?.clientId ?? (clients[0]?.id ?? 0),
     financialYear: initial?.financialYear ?? "",
@@ -67,7 +69,7 @@ function CTForm({ initial, clients, onClose, onSave }: {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Tax Amount (AED)</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">{label("Tax Amount")}</label>
               <input type="number" placeholder="0.00" value={form.taxAmount} onChange={e => setForm({ ...form, taxAmount: e.target.value })}
                 className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
@@ -96,6 +98,7 @@ function CTForm({ initial, clients, onClose, onSave }: {
 export default function CorporateTax() {
   const qc = useQueryClient();
   const { countryParam } = useRegion();
+  const { format } = useCurrency();
   const [filterStatus, setFilterStatus] = useState("");
   const [filterClientStatus, setFilterClientStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -226,7 +229,7 @@ export default function CorporateTax() {
                       <td className="px-4 py-3.5 text-muted-foreground">{r.financialYear}</td>
                       <td className="px-4 py-3.5 text-muted-foreground">{formatDate(r.deadline)}</td>
                       <td className="px-4 py-3.5"><StatusBadge status={r.status} /></td>
-                      <td className="px-4 py-3.5 font-medium">{r.taxAmount != null ? `AED ${Number(r.taxAmount).toLocaleString()}` : "—"}</td>
+                      <td className="px-4 py-3.5 font-medium">{r.taxAmount != null ? format(Number(r.taxAmount)) : "—"}</td>
                       <td className="px-4 py-3.5 text-muted-foreground">{r.assignedTo}</td>
                       <td className="px-4 py-3.5">
                         <button onClick={() => openEdit(r)}

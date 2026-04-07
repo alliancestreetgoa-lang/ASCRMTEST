@@ -7,6 +7,7 @@ import {
   useListVatRecords, useCreateVatRecord, useUpdateVatRecord, useListClients,
 } from "@workspace/api-client-react";
 import { useRegion } from "@/contexts/RegionContext";
+import { useCurrency } from "@/lib/currency";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import type { VatRecord } from "@workspace/api-client-react";
@@ -40,6 +41,7 @@ function VatForm({ initial, clients, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: unknown) => void;
 }) {
+  const { label } = useCurrency();
   const [form, setForm] = useState({
     clientId: initial?.clientId ?? (clients[0]?.id ?? 0),
     vatPeriod: initial?.vatPeriod ?? "",
@@ -87,7 +89,7 @@ function VatForm({ initial, clients, onClose, onSave }: {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Amount (AED)</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">{label("Amount")}</label>
               <input type="number" placeholder="0.00" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
                 className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
@@ -116,6 +118,7 @@ function VatForm({ initial, clients, onClose, onSave }: {
 export default function Vat() {
   const qc = useQueryClient();
   const { countryParam } = useRegion();
+  const { format } = useCurrency();
   const [filterStatus, setFilterStatus] = useState("");
   const [filterClientStatus, setFilterClientStatus] = useState("");
   const [filterQuarter, setFilterQuarter] = useState("");
@@ -350,7 +353,7 @@ export default function Vat() {
                       <td className="px-4 py-3.5 text-muted-foreground">{r.vatPeriod}</td>
                       <td className="px-4 py-3.5 text-muted-foreground">{formatDate(r.dueDate)}</td>
                       <td className="px-4 py-3.5"><StatusBadge status={r.status} /></td>
-                      <td className="px-4 py-3.5 font-medium">{r.amount != null ? `AED ${Number(r.amount).toLocaleString()}` : "—"}</td>
+                      <td className="px-4 py-3.5 font-medium">{r.amount != null ? format(Number(r.amount)) : "—"}</td>
                       <td className="px-4 py-3.5 text-muted-foreground">{r.assignedTo}</td>
                       <td className="px-4 py-3.5">
                         <button onClick={() => openEdit(r)}

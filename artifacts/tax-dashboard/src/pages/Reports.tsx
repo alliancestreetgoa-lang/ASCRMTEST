@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
+import { useCurrency } from "@/lib/currency";
 import {
   useGetDashboardSummary,
   useListTasks,
@@ -60,6 +61,7 @@ function ChartCard({ title, children, className }: { title: string; children: Re
 
 export default function Reports() {
   const [tab, setTab] = useState("Overview");
+  const { format, formatK } = useCurrency();
 
   const { data: summary } = useGetDashboardSummary();
   const { data: tasks } = useListTasks({});
@@ -220,8 +222,8 @@ export default function Reports() {
               <StatMini icon={CheckCircle} value={summary.completedTasks} label="Completed Tasks" color={COLORS.green} />
               <StatMini icon={Clock} value={summary.pendingTasks} label="Pending Tasks" color={COLORS.yellow} />
               <StatMini icon={AlertTriangle} value={summary.overdueTasks} label="Overdue" color={COLORS.red} />
-              <StatMini icon={FileText} value={`£${Math.round(totalVatAmount).toLocaleString()}`} label="Total VAT" color={COLORS.blue} />
-              <StatMini icon={Building2} value={`£${Math.round(totalCtAmount).toLocaleString()}`} label="Total Corp. Tax" color={COLORS.purple} />
+              <StatMini icon={FileText} value={format(Math.round(totalVatAmount))} label="Total VAT" color={COLORS.blue} />
+              <StatMini icon={Building2} value={format(Math.round(totalCtAmount))} label="Total Corp. Tax" color={COLORS.purple} />
             </div>
 
             {/* Charts row */}
@@ -259,9 +261,9 @@ export default function Reports() {
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={vatAmountByClient} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis type="number" fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => `£${(v / 1000).toFixed(0)}k`} />
+                    <XAxis type="number" fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => formatK(v)} />
                     <YAxis dataKey="name" type="category" fontSize={11} tick={{ fill: "#64748b" }} width={130} />
-                    <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+                    <Tooltip formatter={(v: number) => format(v)} />
                     <Bar dataKey="amount" fill={COLORS.blue} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -271,9 +273,9 @@ export default function Reports() {
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={ctAmountByClient} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis type="number" fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => `£${(v / 1000).toFixed(0)}k`} />
+                    <XAxis type="number" fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => formatK(v)} />
                     <YAxis dataKey="name" type="category" fontSize={11} tick={{ fill: "#64748b" }} width={130} />
-                    <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+                    <Tooltip formatter={(v: number) => format(v)} />
                     <Bar dataKey="amount" fill={COLORS.purple} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -312,8 +314,8 @@ export default function Reports() {
                     <BarChart data={vatAmountByClient}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="name" fontSize={11} tick={{ fill: "#64748b" }} angle={-20} textAnchor="end" height={60} />
-                      <YAxis fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => `£${(v / 1000).toFixed(0)}k`} />
-                      <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+                      <YAxis fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => formatK(v)} />
+                      <Tooltip formatter={(v: number) => format(v)} />
                       <Bar dataKey="amount" name="VAT Amount" fill={COLORS.blue} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -341,14 +343,14 @@ export default function Reports() {
                         <td className="px-4 py-3 text-muted-foreground">{v.vatPeriod}</td>
                         <td className="px-4 py-3 text-muted-foreground">{formatDate(v.dueDate)}</td>
                         <td className="px-4 py-3"><StatusBadge status={v.status} /></td>
-                        <td className="px-5 py-3 text-right font-medium">{v.amount != null ? `£${Number(v.amount).toLocaleString()}` : "—"}</td>
+                        <td className="px-5 py-3 text-right font-medium">{v.amount != null ? format(Number(v.amount)) : "—"}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-border bg-muted/30">
                       <td colSpan={4} className="px-5 py-3 text-sm font-semibold">Total</td>
-                      <td className="px-5 py-3 text-right text-sm font-bold text-primary">£{Math.round(totalVatAmount).toLocaleString()}</td>
+                      <td className="px-5 py-3 text-right text-sm font-bold text-primary">{format(Math.round(totalVatAmount))}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -387,8 +389,8 @@ export default function Reports() {
                     <BarChart data={ctAmountByClient}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="name" fontSize={11} tick={{ fill: "#64748b" }} angle={-20} textAnchor="end" height={60} />
-                      <YAxis fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => `£${(v / 1000).toFixed(0)}k`} />
-                      <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+                      <YAxis fontSize={12} tick={{ fill: "#64748b" }} tickFormatter={v => formatK(v)} />
+                      <Tooltip formatter={(v: number) => format(v)} />
                       <Bar dataKey="amount" name="Tax Amount" fill={COLORS.purple} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -415,14 +417,14 @@ export default function Reports() {
                         <td className="px-4 py-3 text-muted-foreground">{c.financialYear}</td>
                         <td className="px-4 py-3 text-muted-foreground">{formatDate(c.deadline)}</td>
                         <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
-                        <td className="px-5 py-3 text-right font-medium">{c.taxAmount != null ? `£${Number(c.taxAmount).toLocaleString()}` : "—"}</td>
+                        <td className="px-5 py-3 text-right font-medium">{c.taxAmount != null ? format(Number(c.taxAmount)) : "—"}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-border bg-muted/30">
                       <td colSpan={4} className="px-5 py-3 text-sm font-semibold">Total</td>
-                      <td className="px-5 py-3 text-right text-sm font-bold text-primary">£{Math.round(totalCtAmount).toLocaleString()}</td>
+                      <td className="px-5 py-3 text-right text-sm font-bold text-primary">{format(Math.round(totalCtAmount))}</td>
                     </tr>
                   </tfoot>
                 </table>

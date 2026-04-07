@@ -2,6 +2,7 @@ import { useParams, useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
+import { useCurrency } from "@/lib/currency";
 import {
   useGetClient, useListTasks, useListVatRecords, useListCorporateTax,
 } from "@workspace/api-client-react";
@@ -22,6 +23,7 @@ export default function ClientProfile() {
   const { data: tasks } = useListTasks({ clientId });
   const { data: vatRecords } = useListVatRecords({ clientId });
   const { data: ctRecords } = useListCorporateTax({ clientId });
+  const { format } = useCurrency();
 
   if (isLoading) {
     return (
@@ -149,7 +151,7 @@ export default function ClientProfile() {
                     <td className="px-5 py-3.5 font-medium">{v.vatPeriod}</td>
                     <td className="px-4 py-3.5 text-muted-foreground">{formatDate(v.dueDate)}</td>
                     <td className="px-4 py-3.5"><StatusBadge status={v.status} /></td>
-                    <td className="px-4 py-3.5">{v.amount != null ? `£${Number(v.amount).toLocaleString()}` : "—"}</td>
+                    <td className="px-4 py-3.5">{v.amount != null ? format(Number(v.amount)) : "—"}</td>
                     <td className="px-4 py-3.5 text-muted-foreground">{v.assignedTo}</td>
                   </tr>
                 ))}
@@ -175,7 +177,7 @@ export default function ClientProfile() {
                     <td className="px-5 py-3.5 font-medium">{c.financialYear}</td>
                     <td className="px-4 py-3.5 text-muted-foreground">{formatDate(c.deadline)}</td>
                     <td className="px-4 py-3.5"><StatusBadge status={c.status} /></td>
-                    <td className="px-4 py-3.5">{c.taxAmount != null ? `£${Number(c.taxAmount).toLocaleString()}` : "—"}</td>
+                    <td className="px-4 py-3.5">{c.taxAmount != null ? format(Number(c.taxAmount)) : "—"}</td>
                     <td className="px-4 py-3.5 text-muted-foreground">{c.assignedTo}</td>
                   </tr>
                 ))}
