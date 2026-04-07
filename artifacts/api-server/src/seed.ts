@@ -1,5 +1,5 @@
 import { db, clientsTable, vatRecordsTable, corporateTaxTable, usersTable } from "@workspace/db";
-import { count, eq } from "drizzle-orm";
+import { count, eq, inArray } from "drizzle-orm";
 import { createHash } from "crypto";
 
 function hashPassword(plain: string) {
@@ -784,8 +784,10 @@ const CLIENTS = [
 
 const SEED_USERS = [
   { name: "Shaukin Phaterpekar", email: "shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
-  { name: "URUJ", email: "uruj@alliancestreet.ae", username: "uruj", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
+
+// Users to remove from the database (cleanup old seed accounts)
+const REMOVE_USERS_BY_USERNAME = ["uruj"];
 
 // Old email → new email migrations (run once)
 const EMAIL_MIGRATIONS: Array<{ from: string; to: { name: string; email: string } }> = [
@@ -793,6 +795,17 @@ const EMAIL_MIGRATIONS: Array<{ from: string; to: { name: string; email: string 
 ];
 
 export async function seedIfEmpty() {
+  // Remove any old seed accounts that should no longer exist
+  if (REMOVE_USERS_BY_USERNAME.length > 0) {
+    const removed = await db
+      .delete(usersTable)
+      .where(inArray(usersTable.username, REMOVE_USERS_BY_USERNAME))
+      .returning();
+    if (removed.length > 0) {
+      console.log(`[seed] Removed old users: ${removed.map(u => u.username).join(", ")}`);
+    }
+  }
+
   // Run any email/name migrations first
   for (const migration of EMAIL_MIGRATIONS) {
     const [old] = await db.select().from(usersTable).where(eq(usersTable.email, migration.from));
