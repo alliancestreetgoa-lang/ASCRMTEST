@@ -812,11 +812,13 @@ export async function seedIfEmpty() {
       console.log(`[seed] Added user: ${user.name}`);
     } else {
       const updates: Record<string, string> = {};
-      // Always keep seed users' passwords in sync with the defined defaults
-      updates.password = hashPassword(user.defaultPassword);
+      // Only set password if none is stored — never overwrite a user-changed password
+      if (!existing.password) updates.password = hashPassword(user.defaultPassword);
       if (!existing.username && user.username) updates.username = user.username;
-      await db.update(usersTable).set(updates).where(eq(usersTable.id, existing.id));
-      console.log(`[seed] Synced user: ${user.name}`);
+      if (Object.keys(updates).length > 0) {
+        await db.update(usersTable).set(updates).where(eq(usersTable.id, existing.id));
+        console.log(`[seed] Updated user fields for: ${user.name}`);
+      }
     }
   }
 
