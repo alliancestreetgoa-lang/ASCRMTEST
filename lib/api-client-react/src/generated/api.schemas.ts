@@ -325,8 +325,10 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  username?: string | null;
   role: UserRole;
   status: UserStatus;
+  permissions?: string | null;
   createdAt: string;
 }
 

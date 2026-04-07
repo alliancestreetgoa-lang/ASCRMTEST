@@ -783,8 +783,8 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
-  { name: "URUJ", email: "URUJ@GMAIL.COM", username: "uruj", role: "Employee", status: "Active", defaultPassword: "uruj123" },
+  { name: "Shaukin Phaterpekar", email: "shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
+  { name: "URUJ", email: "uruj@alliancestreet.ae", username: "uruj", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
 
 // Old email → new email migrations (run once)

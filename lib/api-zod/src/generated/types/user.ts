@@ -15,5 +15,6 @@ export interface User {
   username?: string | null;
   role: UserRole;
   status: UserStatus;
+  permissions?: string | null;
   createdAt: Date;
 }

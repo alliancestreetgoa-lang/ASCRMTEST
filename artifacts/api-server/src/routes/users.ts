@@ -118,6 +118,37 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   });
 });
 
+router.patch("/users/:id/permissions", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid user id" });
+    return;
+  }
+
+  const { permissions } = req.body as { permissions?: string[] | null };
+  if (permissions !== null && permissions !== undefined && !Array.isArray(permissions)) {
+    res.status(400).json({ error: "permissions must be an array or null" });
+    return;
+  }
+
+  const newValue = permissions === null || permissions === undefined
+    ? null
+    : JSON.stringify(permissions);
+
+  const [user] = await db
+    .update(usersTable)
+    .set({ permissions: newValue })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.json({ success: true, permissions: user.permissions });
+});
+
 router.patch("/users/:id/password", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) {
