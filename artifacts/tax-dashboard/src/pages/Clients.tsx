@@ -18,7 +18,12 @@ function ClientForm({ initial, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: unknown) => void;
 }) {
-  const QUARTERS = ["Q1", "Q2", "Q3", "Q4"] as const;
+  const QUARTERS = [
+    { key: "Q1", label: "Q1", months: "Jan – Mar" },
+    { key: "Q2", label: "Q2", months: "Apr – Jun" },
+    { key: "Q3", label: "Q3", months: "Jul – Sep" },
+    { key: "Q4", label: "Q4", months: "Oct – Dec" },
+  ] as const;
 
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -42,7 +47,7 @@ function ClientForm({ initial, onClose, onSave }: {
     const current = new Set(selectedQuarters);
     if (current.has(q)) current.delete(q);
     else current.add(q);
-    const ordered = QUARTERS.filter(x => current.has(x));
+    const ordered = QUARTERS.filter(x => current.has(x.key)).map(x => x.key);
     setForm({ ...form, vatQuarters: ordered.join(",") });
   }
 
@@ -97,14 +102,18 @@ function ClientForm({ initial, onClose, onSave }: {
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">VAT Quarters</label>
               <div className="flex gap-3">
                 {QUARTERS.map(q => (
-                  <label key={q} className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <label key={q.key} className="flex items-start gap-2 cursor-pointer select-none border border-border rounded-lg px-3 py-2 hover:bg-muted/50 transition-colors"
+                    style={{ minWidth: 0 }}>
                     <input
                       type="checkbox"
-                      checked={selectedQuarters.includes(q)}
-                      onChange={() => toggleQuarter(q)}
-                      className="w-4 h-4 rounded accent-primary"
+                      checked={selectedQuarters.includes(q.key)}
+                      onChange={() => toggleQuarter(q.key)}
+                      className="mt-0.5 w-4 h-4 rounded accent-primary shrink-0"
                     />
-                    <span className="text-sm font-medium">{q}</span>
+                    <div>
+                      <div className="text-sm font-semibold leading-tight">{q.label}</div>
+                      <div className="text-[10px] text-muted-foreground leading-tight">{q.months}</div>
+                    </div>
                   </label>
                 ))}
               </div>
