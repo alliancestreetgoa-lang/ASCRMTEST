@@ -14,6 +14,26 @@ import { toast } from "sonner";
 
 const PAGE_SIZE = 25;
 
+const QUARTERS = [
+  { label: "Q1", months: ["jan", "feb", "mar"], name: "Jan – Mar" },
+  { label: "Q2", months: ["apr", "may", "jun"], name: "Apr – Jun" },
+  { label: "Q3", months: ["jul", "aug", "sep"], name: "Jul – Sep" },
+  { label: "Q4", months: ["oct", "nov", "dec"], name: "Oct – Dec" },
+];
+
+function getQuarterFromPeriod(vatPeriod: string): string | null {
+  const lower = vatPeriod.toLowerCase();
+  for (const q of QUARTERS) {
+    if (q.months.some(m => lower.startsWith(m) || lower.includes(` ${m}`))) return q.label;
+  }
+  return null;
+}
+
+function getYearFromPeriod(vatPeriod: string): string | null {
+  const match = vatPeriod.match(/\b(20\d{2})\b/);
+  return match ? match[1] : null;
+}
+
 function VatForm({ initial, clients, onClose, onSave }: {
   initial?: Partial<VatRecord>;
   clients: { id: number; name: string }[];
@@ -98,6 +118,8 @@ export default function Vat() {
   const { countryParam } = useRegion();
   const [filterStatus, setFilterStatus] = useState("");
   const [filterClientStatus, setFilterClientStatus] = useState("");
+  const [filterQuarter, setFilterQuarter] = useState("");
+  const [filterYear, setFilterYear] = useState(String(new Date().getFullYear()));
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<VatRecord | null>(null);
@@ -136,14 +158,39 @@ export default function Vat() {
 
   const clientsForForm = (clients ?? []).map(c => ({ id: c.id, name: c.name }));
 
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    for (const r of (records ?? [])) {
+      const y = getYearFromPeriod(r.vatPeriod);
+      if (y) years.add(y);
+    }
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [records]);
+
+  const quarterStats = useMemo(() => {
+    const yearRecords = (records ?? []).filter(r => !filterYear || getYearFromPeriod(r.vatPeriod) === filterYear);
+    return QUARTERS.map(q => {
+      const recs = yearRecords.filter(r => getQuarterFromPeriod(r.vatPeriod) === q.label);
+      return {
+        ...q,
+        total: recs.length,
+        filed: recs.filter(r => r.status === "Filed").length,
+        overdue: recs.filter(r => r.status === "Overdue").length,
+        pending: recs.filter(r => r.status === "Pending" || r.status === "InProgress").length,
+      };
+    });
+  }, [records, filterYear]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return (records ?? []).filter(r => {
       if (q && !r.clientName.toLowerCase().includes(q) && !r.vatPeriod.toLowerCase().includes(q)) return false;
       if (filterClientStatus && clientStatusMap[r.clientId] !== filterClientStatus) return false;
+      if (filterYear && getYearFromPeriod(r.vatPeriod) !== filterYear) return false;
+      if (filterQuarter && getQuarterFromPeriod(r.vatPeriod) !== filterQuarter) return false;
       return true;
     });
-  }, [records, search, filterClientStatus, clientStatusMap]);
+  }, [records, search, filterClientStatus, clientStatusMap, filterYear, filterQuarter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -170,6 +217,83 @@ export default function Vat() {
       )}
 
       <div className="space-y-5">
+        {/* Year + Quarter selector */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <select
+            value={filterYear}
+            onChange={e => { setFilterYear(e.target.value); setFilterQuarter(""); setPage(1); }}
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium"
+          >
+            <option value="">All Years</option>
+            {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+          <div className="flex items-center gap-1.5">
+            {["", "Q1", "Q2", "Q3", "Q4"].map(q => (
+              <button
+                key={q || "all"}
+                onClick={() => { setFilterQuarter(q); setPage(1); }}
+                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                  filterQuarter === q
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                {q || "All"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quarter summary cards */}
+        <div className="grid grid-cols-4 gap-4">
+          {quarterStats.map(q => {
+            const isActive = filterQuarter === q.label;
+            return (
+              <button
+                key={q.label}
+                onClick={() => { setFilterQuarter(isActive ? "" : q.label); setPage(1); }}
+                className={`text-left p-4 rounded-xl border transition-all ${
+                  isActive
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-white hover:border-primary/30 hover:shadow-sm"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${isActive ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>
+                    {q.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{q.name}</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-3">{q.total}</div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Filed
+                    </span>
+                    <span className="font-medium text-emerald-600">{q.filed}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      Overdue
+                    </span>
+                    <span className="font-medium text-red-600">{q.overdue}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                      Pending
+                    </span>
+                    <span className="font-medium text-yellow-600">{q.pending}</span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filters row */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-48 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
