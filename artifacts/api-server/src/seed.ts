@@ -37,9 +37,9 @@ const CLIENTS = [
 
   const VAT_RECORDS = [
   { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "Nov 2025 - Jan 2026", dueDate: "2026-05-07T00:00:00.000+00:00", status: "Filed", assignedTo: "Unassigned" },
-  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "Feb 2026 - Apr 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "May 2026 - Jul 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "Aug 2026 - Oct 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "Feb - Apr 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "May - Jul 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "ADVENTURE HUB - FZCO", vatPeriod: "Aug - Oct 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ADVERTICA International FZE", vatPeriod: "Jan - Mar 2026", dueDate: "2026-05-07T00:00:00.000+00:00", status: "Filed", assignedTo: "Unassigned" },
   { clientName: "ADVERTICA International FZE", vatPeriod: "Apr - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ADVERTICA International FZE", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
@@ -113,29 +113,29 @@ const CLIENTS = [
   { clientName: "Oxtorea FZ-LLC", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "Oxtorea FZ-LLC", vatPeriod: "Oct - Dec 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "Nov 2025 - Jan 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "Feb 2026 - Apr 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "May 2026 - Jul 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "Aug 2026 - Oct 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "Feb - Apr 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "May - Jul 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PADBROOK FINANCE FZCO", vatPeriod: "Aug - Oct 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ProWater Trading FZ-LLC", vatPeriod: "Jan - Mar 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ProWater Trading FZ-LLC", vatPeriod: "Apr - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ProWater Trading FZ-LLC", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ProWater Trading FZ-LLC", vatPeriod: "Oct - Dec 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PublishU Global FZCO", vatPeriod: "Mar 2026 - May 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PublishU Global FZCO", vatPeriod: "Jun 2026 - Aug 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "PublishU Global FZCO", vatPeriod: "Sep 2026 - Nov 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PublishU Global FZCO", vatPeriod: "Mar - May 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PublishU Global FZCO", vatPeriod: "Jun - Aug 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "PublishU Global FZCO", vatPeriod: "Sep - Nov 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "PublishU Global FZCO", vatPeriod: "Dec 2026 - Feb 2027", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Mar 2026 - May 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Apr 2026 - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Jul 2026 - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Oct 2026 - Dec 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Mar - May 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Apr - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "RC HOLDING FZ-LLC", vatPeriod: "Oct - Dec 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ROYAL TRADE ALLIANCE FZC", vatPeriod: "Jan - Mar 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ROYAL TRADE ALLIANCE FZC", vatPeriod: "Apr - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ROYAL TRADE ALLIANCE FZC", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "ROYAL TRADE ALLIANCE FZC", vatPeriod: "Oct - Dec 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "WILMA - FZCO", vatPeriod: "Dec 2025 - Feb 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "WILMA - FZCO", vatPeriod: "Mar 2026 - May 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "WILMA - FZCO", vatPeriod: "Jun 2026 - Aug 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
-  { clientName: "WILMA - FZCO", vatPeriod: "Sep 2026 - Nov 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "WILMA - FZCO", vatPeriod: "Mar - May 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "WILMA - FZCO", vatPeriod: "Jun - Aug 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
+  { clientName: "WILMA - FZCO", vatPeriod: "Sep - Nov 2026", dueDate: "2027-02-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "Yambana International FZE", vatPeriod: "Jan - Mar 2026", dueDate: "2026-05-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "Yambana International FZE", vatPeriod: "Apr - Jun 2026", dueDate: "2026-08-07", status: "Pending", assignedTo: "Unassigned" },
   { clientName: "Yambana International FZE", vatPeriod: "Jul - Sep 2026", dueDate: "2026-11-07", status: "Pending", assignedTo: "Unassigned" },
@@ -229,6 +229,20 @@ export async function seedIfEmpty() {
       console.log(`[seed] Removed ${orphanedVat.length} orphaned VAT + ${orphanedCt.length} orphaned CT records`);
     }
   }
+
+  // Normalize VAT period format: "Feb 2026 - Apr 2026" → "Feb - Apr 2026" (same year only)
+  const allVat = await db.select({ id: vatRecordsTable.id, vatPeriod: vatRecordsTable.vatPeriod }).from(vatRecordsTable);
+  const monthPattern = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) - (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})$/;
+  let normalizedCount = 0;
+  for (const rec of allVat) {
+    const m = rec.vatPeriod.match(monthPattern);
+    if (m && m[2] === m[4]) {
+      const normalized = `${m[1]} - ${m[3]} ${m[4]}`;
+      await db.update(vatRecordsTable).set({ vatPeriod: normalized }).where(eq(vatRecordsTable.id, rec.id));
+      normalizedCount++;
+    }
+  }
+  if (normalizedCount > 0) console.log(`[seed] Normalized ${normalizedCount} VAT period formats`);
 
   // Run any email/name migrations first
   for (const migration of EMAIL_MIGRATIONS) {
