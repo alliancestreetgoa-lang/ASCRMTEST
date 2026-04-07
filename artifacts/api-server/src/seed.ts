@@ -783,7 +783,7 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Shaukin Phaterpekar", email: "shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
+  { name: "Shaukin Phaterpekar", email: "shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "sapna@123" },
 ];
 
 // Users to remove from the database (cleanup old seed accounts)
@@ -792,6 +792,15 @@ const REMOVE_USERS_BY_USERNAME = ["uruj"];
 // Old email → new email migrations (run once)
 const EMAIL_MIGRATIONS: Array<{ from: string; to: { name: string; email: string } }> = [
   { from: "sarah@taxfirm.co.uk", to: { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae" } },
+];
+
+// One-time password migrations: if user has oldHash, update to newHash
+const PASSWORD_MIGRATIONS: Array<{ username: string; oldHash: string; newHash: string }> = [
+  {
+    username: "shaukin",
+    oldHash: "39f3028175592b07612f341354c97f6be146cddd51ea83567af760ae15e5ef92", // Sapna@12345$$
+    newHash: "15a0495a832c5aae95a887f105abda086e184efdf42a9414fd3b06c2218fe7ac", // sapna@123
+  },
 ];
 
 export async function seedIfEmpty() {
@@ -812,6 +821,15 @@ export async function seedIfEmpty() {
     if (old) {
       await db.update(usersTable).set({ name: migration.to.name, email: migration.to.email }).where(eq(usersTable.id, old.id));
       console.log(`[seed] Migrated user: ${migration.from} → ${migration.to.email}`);
+    }
+  }
+
+  // Run one-time password migrations (only updates if user still has the old hash)
+  for (const pm of PASSWORD_MIGRATIONS) {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.username, pm.username));
+    if (user && user.password === pm.oldHash) {
+      await db.update(usersTable).set({ password: pm.newHash }).where(eq(usersTable.id, user.id));
+      console.log(`[seed] Updated password for: ${pm.username}`);
     }
   }
 
