@@ -8,6 +8,7 @@ import {
   useListClients, useCreateClient, useUpdateClient, useDeleteClient,
 } from "@workspace/api-client-react";
 import { useRegion } from "@/contexts/RegionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Eye, Pencil, Trash2, X, Globe } from "lucide-react";
 import type { Client } from "@workspace/api-client-react";
@@ -214,7 +215,12 @@ function ClientForm({ initial, onClose, onSave }: {
 export default function Clients() {
   const qc = useQueryClient();
   const [, navigate] = useLocation();
+  const { hasPermission } = useAuth();
   const { region, setRegion } = useRegion();
+
+  const canCreate = hasPermission("Create Client");
+  const canEdit   = hasPermission("Edit Client");
+  const canDelete = hasPermission("Delete Client");
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState(() => region === "All" ? "" : region);
   const [status, setStatus] = useState("");
@@ -328,11 +334,13 @@ export default function Clients() {
             })}
           </div>
 
-          <button onClick={openCreate}
-            className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" />
-            Add Client
-          </button>
+          {canCreate && (
+            <button onClick={openCreate}
+              className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+              <Plus className="w-4 h-4" />
+              Add Client
+            </button>
+          )}
         </div>
 
         {/* Table */}
@@ -382,14 +390,18 @@ export default function Clients() {
                             className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors" title="View">
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-yellow-50 text-yellow-600 rounded-lg transition-colors" title="Edit">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteId(c.id)}
-                            className="p-1.5 hover:bg-red-50 text-red-600 rounded-lg transition-colors" title="Delete">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {canEdit && (
+                            <button onClick={() => openEdit(c)} className="p-1.5 hover:bg-yellow-50 text-yellow-600 rounded-lg transition-colors" title="Edit">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              onClick={() => setDeleteId(c.id)}
+                              className="p-1.5 hover:bg-red-50 text-red-600 rounded-lg transition-colors" title="Delete">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

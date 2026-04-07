@@ -1,6 +1,13 @@
 // @refresh reset
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
+const ROLE_DEFAULT_PERMISSIONS: Record<string, string[]> = {
+  SuperAdmin: ["Create Client", "Edit Client", "Delete Client", "Assign Task", "Manage Users", "View Reports", "Tax Settings"],
+  Admin: ["Create Client", "Edit Client", "Assign Task", "View Reports"],
+  Manager: ["Create Client", "Edit Client", "Assign Task", "View Reports"],
+  Employee: ["Edit Client", "Assign Task"],
+};
+
 export type AuthUser = {
   id: number;
   name: string;
@@ -8,12 +15,14 @@ export type AuthUser = {
   username?: string | null;
   role: "SuperAdmin" | "Admin" | "Manager" | "Employee";
   status: string;
+  permissions?: string | null;
 };
 
 type AuthContextType = {
   user: AuthUser | null;
   login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
+  hasPermission: (perm: string) => boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -39,8 +48,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const hasPermission = useCallback((perm: string): boolean => {
+    if (!user) return false;
+    if (user.permissions !== null && user.permissions !== undefined) {
+      try {
+        const parsed = JSON.parse(user.permissions);
+        if (Array.isArray(parsed)) return parsed.includes(perm);
+      } catch {
+        // ignore malformed JSON
+      }
+      return false;
+    }
+    return (ROLE_DEFAULT_PERMISSIONS[user.role] ?? []).includes(perm);
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );
