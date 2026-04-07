@@ -23,9 +23,11 @@ const QUARTERS = [
 ];
 
 function getQuarterFromPeriod(vatPeriod: string): string | null {
-  const lower = vatPeriod.toLowerCase();
+  const lower = vatPeriod.toLowerCase().trim();
+  // Only match on the STARTING month — never on the end month
+  const startWord = lower.split(/[\s\-–]/)[0];
   for (const q of QUARTERS) {
-    if (q.months.some(m => lower.startsWith(m) || lower.includes(` ${m}`))) return q.label;
+    if (q.months.includes(startWord)) return q.label;
   }
   return null;
 }
