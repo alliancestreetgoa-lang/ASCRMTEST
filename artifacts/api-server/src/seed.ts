@@ -783,8 +783,8 @@ const CLIENTS = [
 ];
 
 const SEED_USERS = [
-  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
-  { name: "URUJ", email: "URUJ@GMAIL.COM", role: "Employee", status: "Active", defaultPassword: "uruj123" },
+  { name: "Shaukin Phaterpekar", email: "Shaukin@alliancestreet.ae", username: "shaukin", role: "SuperAdmin", status: "Active", defaultPassword: "Sapna@12345$$" },
+  { name: "URUJ", email: "URUJ@GMAIL.COM", username: "uruj", role: "Employee", status: "Active", defaultPassword: "uruj123" },
 ];
 
 // Old email → new email migrations (run once)
@@ -810,9 +810,14 @@ export async function seedIfEmpty() {
     if (!existing) {
       await db.insert(usersTable).values({ ...user, password: hashPassword(user.defaultPassword) });
       console.log(`[seed] Added user: ${user.name}`);
-    } else if (!existing.password) {
-      await db.update(usersTable).set({ password: hashPassword(user.defaultPassword) }).where(eq(usersTable.id, existing.id));
-      console.log(`[seed] Set default password for: ${user.name}`);
+    } else {
+      const updates: Record<string, string> = {};
+      if (!existing.password) updates.password = hashPassword(user.defaultPassword);
+      if (!existing.username && user.username) updates.username = user.username;
+      if (Object.keys(updates).length > 0) {
+        await db.update(usersTable).set(updates).where(eq(usersTable.id, existing.id));
+        console.log(`[seed] Updated user fields for: ${user.name}`);
+      }
     }
   }
 

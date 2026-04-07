@@ -4,13 +4,14 @@ export type AuthUser = {
   id: number;
   name: string;
   email: string;
+  username?: string | null;
   role: "SuperAdmin" | "Admin" | "Manager" | "Employee";
   status: string;
 };
 
 type AuthContextType = {
   user: AuthUser | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -19,11 +20,11 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (identifier: string, password: string) => {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));

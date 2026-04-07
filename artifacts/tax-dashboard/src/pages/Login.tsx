@@ -5,22 +5,22 @@ import { toast } from "sonner";
 
 export default function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      toast.error("Please enter your email and password");
+    if (!identifier.trim() || !password.trim()) {
+      toast.error("Please enter your username and password");
       return;
     }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identifier, password);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Invalid email or password");
+      toast.error(err instanceof Error ? err.message : "Invalid username or password");
     } finally {
       setLoading(false);
     }
@@ -102,13 +102,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Email address</label>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">Username</label>
               <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@alliancestreet.ae"
-                autoComplete="email"
+                type="text"
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
+                placeholder="Enter your username"
+                autoComplete="username"
                 className="w-full px-3.5 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
               />
             </div>

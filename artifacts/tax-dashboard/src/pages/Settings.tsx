@@ -25,13 +25,14 @@ const allPermissions = ["Create Client", "Edit Client", "Delete Client", "Assign
 
 function UserForm({ onClose, onSave, editUser }: {
   onClose: () => void;
-  onSave: (data: { name: string; email: string; role: User["role"]; status: User["status"]; password?: string }) => void;
+  onSave: (data: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; password?: string }) => void;
   editUser?: User;
 }) {
   const isEditing = !!editUser;
   const [form, setForm] = useState({
     name: editUser?.name ?? "",
     email: editUser?.email ?? "",
+    username: editUser?.username ?? "",
     role: (editUser?.role ?? "Employee") as User["role"],
     status: (editUser?.status ?? "Active") as User["status"],
     password: "",
@@ -39,12 +40,13 @@ function UserForm({ onClose, onSave, editUser }: {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSave = () => {
-    const payload: { name: string; email: string; role: User["role"]; status: User["status"]; password?: string } = {
+    const payload: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; password?: string } = {
       name: form.name,
       email: form.email,
       role: form.role,
       status: form.status,
     };
+    if (form.username.trim()) payload.username = form.username.trim();
     if (form.password.trim()) payload.password = form.password.trim();
     onSave(payload);
   };
@@ -65,6 +67,15 @@ function UserForm({ onClose, onSave, editUser }: {
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email *</label>
             <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+              className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              Username
+              <span className="ml-1 text-muted-foreground/60 font-normal">(used for login)</span>
+            </label>
+            <input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })}
+              placeholder="e.g. shaukin"
               className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" />
           </div>
           <div className="grid grid-cols-2 gap-4">

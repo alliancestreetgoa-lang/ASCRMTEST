@@ -72,20 +72,39 @@ router.delete("/users/:id", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/login", async (req, res): Promise<void> => {
-  const { email, password } = req.body as { email?: string; password?: string };
-  if (!email || !password) {
-    res.status(400).json({ error: "Email and password are required" });
+  const { identifier, password } = req.body as { identifier?: string; password?: string };
+  if (!identifier || !password) {
+    res.status(400).json({ error: "Username and password are required" });
     return;
   }
 
   const hashed = hashPassword(password.trim());
-  const [user] = await db
+  const trimmed = identifier.trim();
+
+  // Try username match first, then email
+  let [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.email, email.trim()));
+    .where(eq(usersTable.username, trimmed));
+
+  if (!user) {
+    [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, trimmed));
+  }
+
+  // Also try case-insensitive email fallback
+  if (!user) {
+    const all = await db.select().from(usersTable);
+    user = all.find(u =>
+      u.email.toLowerCase() === trimmed.toLowerCase() ||
+      (u.username && u.username.toLowerCase() === trimmed.toLowerCase())
+    )!;
+  }
 
   if (!user || user.password !== hashed) {
-    res.status(401).json({ error: "Invalid email or password" });
+    res.status(401).json({ error: "Invalid username or password" });
     return;
   }
 
@@ -93,6 +112,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     id: user.id,
     name: user.name,
     email: user.email,
+    username: user.username,
     role: user.role,
     status: user.status,
   });

@@ -417,6 +417,7 @@ export const ListUsersResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
   email: zod.string(),
+  username: zod.string().nullish(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
   createdAt: zod.coerce.date(),
@@ -429,6 +430,7 @@ export const ListUsersResponse = zod.array(ListUsersResponseItem);
 export const CreateUserBody = zod.object({
   name: zod.string(),
   email: zod.string(),
+  username: zod.string().optional(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
 });
@@ -443,6 +445,7 @@ export const UpdateUserParams = zod.object({
 export const UpdateUserBody = zod.object({
   name: zod.string(),
   email: zod.string(),
+  username: zod.string().nullish(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
 });
@@ -451,6 +454,7 @@ export const UpdateUserResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
   email: zod.string(),
+  username: zod.string().nullish(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
   createdAt: zod.coerce.date(),
