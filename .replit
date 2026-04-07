@@ -31,3 +31,4 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
+SHARED_DATABASE_URL = "postgresql://neondb_owner:npg_WegHUdI7a6pk@ep-rough-night-amuepns6-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
