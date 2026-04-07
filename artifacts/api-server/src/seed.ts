@@ -842,14 +842,15 @@ export async function seedIfEmpty() {
       await db.insert(usersTable).values({ ...user, password: hashPassword(user.defaultPassword) });
       console.log(`[seed] Added user: ${user.name}`);
     } else {
-      const updates: Record<string, string> = {};
-      // Only set password if none is stored — never overwrite a user-changed password
-      if (!existing.password) updates.password = hashPassword(user.defaultPassword);
-      if (!existing.username && user.username) updates.username = user.username;
-      if (Object.keys(updates).length > 0) {
-        await db.update(usersTable).set(updates).where(eq(usersTable.id, existing.id));
-        console.log(`[seed] Updated user fields for: ${user.name}`);
-      }
+      // Always sync seed user credentials so dev and production stay identical
+      await db.update(usersTable).set({
+        password: hashPassword(user.defaultPassword),
+        name: user.name,
+        role: user.role,
+        status: user.status,
+        ...(user.username && !existing.username ? { username: user.username } : {}),
+      }).where(eq(usersTable.id, existing.id));
+      console.log(`[seed] Synced user: ${user.name}`);
     }
   }
 
