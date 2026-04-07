@@ -18,17 +18,33 @@ function ClientForm({ initial, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: unknown) => void;
 }) {
+  const QUARTERS = ["Q1", "Q2", "Q3", "Q4"] as const;
+
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     country: initial?.country ?? "UK",
     vatNumber: initial?.vatNumber ?? "",
     corporateTaxStatus: initial?.corporateTaxStatus ?? "Pending",
+    corporateTaxDeadline: initial?.corporateTaxDeadline ?? "",
+    vatQuarters: initial?.vatQuarters ?? "",
     status: initial?.status ?? "Active",
     assignedTo: initial?.assignedTo ?? "",
     email: initial?.email ?? "",
     phone: initial?.phone ?? "",
     address: initial?.address ?? "",
   });
+
+  const selectedQuarters = form.vatQuarters
+    ? form.vatQuarters.split(",").filter(Boolean)
+    : [];
+
+  function toggleQuarter(q: string) {
+    const current = new Set(selectedQuarters);
+    if (current.has(q)) current.delete(q);
+    else current.add(q);
+    const ordered = QUARTERS.filter(x => current.has(x));
+    setForm({ ...form, vatQuarters: ordered.join(",") });
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -67,6 +83,31 @@ function ClientForm({ initial, onClose, onSave }: {
                 <option value="Inactive">Inactive</option>
                 <option value="Pending">Pending</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Corp. Tax Deadline</label>
+              <input
+                type="date"
+                value={form.corporateTaxDeadline ?? ""}
+                onChange={e => setForm({ ...form, corporateTaxDeadline: e.target.value })}
+                className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">VAT Quarters</label>
+              <div className="flex gap-3">
+                {QUARTERS.map(q => (
+                  <label key={q} className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={selectedQuarters.includes(q)}
+                      onChange={() => toggleQuarter(q)}
+                      className="w-4 h-4 rounded accent-primary"
+                    />
+                    <span className="text-sm font-medium">{q}</span>
+                  </label>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">Status *</label>

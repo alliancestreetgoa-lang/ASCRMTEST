@@ -93,6 +93,8 @@ export const ListClientsResponseItem = zod.object({
   email: zod.string().nullish(),
   phone: zod.string().nullish(),
   address: zod.string().nullish(),
+  corporateTaxDeadline: zod.string().nullish(),
+  vatQuarters: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListClientsResponse = zod.array(ListClientsResponseItem);
@@ -110,6 +112,8 @@ export const CreateClientBody = zod.object({
   email: zod.string().optional(),
   phone: zod.string().optional(),
   address: zod.string().optional(),
+  corporateTaxDeadline: zod.string().optional(),
+  vatQuarters: zod.string().optional(),
 });
 
 /**
@@ -130,6 +134,8 @@ export const GetClientResponse = zod.object({
   email: zod.string().nullish(),
   phone: zod.string().nullish(),
   address: zod.string().nullish(),
+  corporateTaxDeadline: zod.string().nullish(),
+  vatQuarters: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -150,6 +156,8 @@ export const UpdateClientBody = zod.object({
   email: zod.string().nullish(),
   phone: zod.string().nullish(),
   address: zod.string().nullish(),
+  corporateTaxDeadline: zod.string().nullish(),
+  vatQuarters: zod.string().nullish(),
 });
 
 export const UpdateClientResponse = zod.object({
@@ -163,6 +171,8 @@ export const UpdateClientResponse = zod.object({
   email: zod.string().nullish(),
   phone: zod.string().nullish(),
   address: zod.string().nullish(),
+  corporateTaxDeadline: zod.string().nullish(),
+  vatQuarters: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 

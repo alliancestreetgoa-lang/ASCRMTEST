@@ -20,5 +20,7 @@ export interface Client {
   email?: string;
   phone?: string;
   address?: string;
+  corporateTaxDeadline?: string | null;
+  vatQuarters?: string | null;
   createdAt: Date;
 }

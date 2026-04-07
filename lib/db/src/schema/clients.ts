@@ -13,6 +13,8 @@ export const clientsTable = pgTable("clients", {
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
+  corporateTaxDeadline: text("corporate_tax_deadline"),
+  vatQuarters: text("vat_quarters"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

@@ -19,4 +19,6 @@ export interface CreateClientBody {
   email?: string;
   phone?: string;
   address?: string;
+  corporateTaxDeadline?: string;
+  vatQuarters?: string;
 }
