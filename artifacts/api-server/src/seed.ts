@@ -1,5 +1,5 @@
 import { db, clientsTable, vatRecordsTable, corporateTaxTable, usersTable } from "@workspace/db";
-import { count, eq, inArray } from "drizzle-orm";
+import { count, eq, inArray, sql } from "drizzle-orm";
 import { createHash } from "crypto";
 
 function hashPassword(plain: string) {
@@ -214,6 +214,20 @@ export async function seedIfEmpty() {
     await db.delete(corporateTaxTable).where(inArray(corporateTaxTable.clientId, inactiveIds));
     await db.delete(clientsTable).where(inArray(clientsTable.id, inactiveIds));
     console.log(`[seed] Removed ${inactiveClients.length} inactive clients and their records`);
+  }
+
+  // Clean up orphaned VAT/CT records whose clients no longer exist
+  const allClientIds = (await db.select({ id: clientsTable.id }).from(clientsTable)).map(c => c.id);
+  if (allClientIds.length > 0) {
+    const orphanedVat = await db.delete(vatRecordsTable)
+      .where(sql`${vatRecordsTable.clientId} NOT IN (${sql.join(allClientIds.map(id => sql`${id}`), sql`, `)})`)
+      .returning();
+    const orphanedCt = await db.delete(corporateTaxTable)
+      .where(sql`${corporateTaxTable.clientId} NOT IN (${sql.join(allClientIds.map(id => sql`${id}`), sql`, `)})`)
+      .returning();
+    if (orphanedVat.length > 0 || orphanedCt.length > 0) {
+      console.log(`[seed] Removed ${orphanedVat.length} orphaned VAT + ${orphanedCt.length} orphaned CT records`);
+    }
   }
 
   // Run any email/name migrations first
