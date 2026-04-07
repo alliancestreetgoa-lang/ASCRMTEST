@@ -11,6 +11,7 @@ export const usersTable = pgTable("users", {
   status: text("status").notNull().default("Active"),
   password: text("password"),
   permissions: text("permissions"),
+  region: text("region").notNull().default("All"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

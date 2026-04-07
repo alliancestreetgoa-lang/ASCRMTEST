@@ -421,6 +421,7 @@ export const ListUsersResponseItem = zod.object({
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
   permissions: zod.string().nullish(),
+  region: zod.enum(["All", "UK", "UAE"]).default("All"),
   createdAt: zod.coerce.date(),
 });
 export const ListUsersResponse = zod.array(ListUsersResponseItem);
@@ -434,6 +435,7 @@ export const CreateUserBody = zod.object({
   username: zod.string().optional(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
+  region: zod.enum(["All", "UK", "UAE"]).optional(),
 });
 
 /**
@@ -449,6 +451,7 @@ export const UpdateUserBody = zod.object({
   username: zod.string().nullish(),
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
+  region: zod.enum(["All", "UK", "UAE"]).optional(),
 });
 
 export const UpdateUserResponse = zod.object({
@@ -459,6 +462,7 @@ export const UpdateUserResponse = zod.object({
   role: zod.enum(["SuperAdmin", "Admin", "Manager", "Employee"]),
   status: zod.enum(["Active", "Inactive"]),
   permissions: zod.string().nullish(),
+  region: zod.enum(["All", "UK", "UAE"]).default("All"),
   createdAt: zod.coerce.date(),
 });
 

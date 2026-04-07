@@ -2,8 +2,9 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { RegionProvider } from "@/contexts/RegionContext";
+import { RegionProvider, useRegion, type Region } from "@/contexts/RegionContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
@@ -43,6 +44,14 @@ function Router() {
 
 function AppShell() {
   const { user } = useAuth();
+  const { setRegion } = useRegion();
+
+  useEffect(() => {
+    if (user?.region) {
+      setRegion(user.region as Region);
+    }
+  }, [user, setRegion]);
+
   if (!user) return <Login />;
   return (
     <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>

@@ -238,18 +238,24 @@ export default function Topbar({ title }: { title: string }) {
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
-          <div className="relative">
-            <select
-              value={region}
-              onChange={e => setRegion(e.target.value as Region)}
-              className="appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="All">All Regions</option>
-              <option value="UK">UK</option>
-              <option value="UAE">UAE</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-          </div>
+          {isSuperAdmin ? (
+            <div className="relative">
+              <select
+                value={region}
+                onChange={e => setRegion(e.target.value as Region)}
+                className="appearance-none pl-3 pr-8 py-2 text-sm border border-border rounded-lg bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="All">All Regions</option>
+                <option value="UK">UK</option>
+                <option value="UAE">UAE</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
+          ) : (
+            <span className="px-3 py-1.5 text-sm font-medium border border-border rounded-lg bg-muted text-muted-foreground">
+              {region === "All" ? "All Regions" : region}
+            </span>
+          )}
 
           <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />

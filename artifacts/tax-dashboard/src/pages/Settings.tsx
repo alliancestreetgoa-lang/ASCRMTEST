@@ -163,7 +163,7 @@ function UserPermissionsModal({ user, onClose, onSaved }: {
 
 function UserForm({ onClose, onSave, editUser }: {
   onClose: () => void;
-  onSave: (data: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; password?: string }) => void;
+  onSave: (data: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; region: "All" | "UK" | "UAE"; password?: string }) => void;
   editUser?: User;
 }) {
   const isEditing = !!editUser;
@@ -173,16 +173,18 @@ function UserForm({ onClose, onSave, editUser }: {
     username: editUser?.username ?? "",
     role: (editUser?.role ?? "Employee") as User["role"],
     status: (editUser?.status ?? "Active") as User["status"],
+    region: (editUser?.region ?? "All") as "All" | "UK" | "UAE",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSave = () => {
-    const payload: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; password?: string } = {
+    const payload: { name: string; email: string; username?: string; role: User["role"]; status: User["status"]; region: "All" | "UK" | "UAE"; password?: string } = {
       name: form.name,
       email: form.email,
       role: form.role,
       status: form.status,
+      region: form.region,
     };
     if (form.username.trim()) payload.username = form.username.trim();
     if (form.password.trim()) payload.password = form.password.trim();
@@ -235,6 +237,16 @@ function UserForm({ onClose, onSave, editUser }: {
                 <option value="Inactive">Inactive</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Region</label>
+            <select value={form.region} onChange={e => setForm({ ...form, region: e.target.value as "All" | "UK" | "UAE" })}
+              className="w-full px-3 py-2.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20">
+              <option value="All">All Regions</option>
+              <option value="UK">UK</option>
+              <option value="UAE">UAE</option>
+            </select>
+            <p className="mt-1 text-xs text-muted-foreground">Restricts this user to only see clients in the selected region.</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
@@ -330,7 +342,7 @@ export default function Settings() {
         <UserForm
           onClose={() => setShowUserForm(false)}
           onSave={(data) => {
-            const { password: _pw, ...rest } = data as { name: string; email: string; role: User["role"]; status: User["status"]; password?: string };
+            const { password: _pw, ...rest } = data;
             createUser.mutate({ data: rest });
             setShowUserForm(false);
           }}
@@ -341,7 +353,7 @@ export default function Settings() {
           editUser={editingUser}
           onClose={() => setEditingUser(null)}
           onSave={async (data) => {
-            const { password, ...rest } = data as { name: string; email: string; role: User["role"]; status: User["status"]; password?: string };
+            const { password, ...rest } = data;
             updateUser.mutate({ id: editingUser.id, data: rest });
             if (password) {
               try {
@@ -471,6 +483,7 @@ export default function Settings() {
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Email</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Role</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Status</th>
+                      <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Region</th>
                       <th className="text-left px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase">Added</th>
                       {isSuperAdmin && <th className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase text-left">Actions</th>}
                     </tr>
@@ -497,6 +510,15 @@ export default function Settings() {
                             <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">{u.role}</span>
                           </td>
                           <td className="px-4 py-3.5"><StatusBadge status={u.status} /></td>
+                          <td className="px-4 py-3.5">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              u.region === "UK" ? "bg-blue-100 text-blue-700"
+                              : u.region === "UAE" ? "bg-teal-100 text-teal-700"
+                              : "bg-muted text-muted-foreground"
+                            }`}>
+                              {u.region ?? "All"}
+                            </span>
+                          </td>
                           <td className="px-4 py-3.5 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
                           {isSuperAdmin && (
                             <td className="px-4 py-3.5">

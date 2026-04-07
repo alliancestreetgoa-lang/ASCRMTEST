@@ -16,5 +16,6 @@ export interface User {
   role: UserRole;
   status: UserStatus;
   permissions?: string | null;
+  region?: "All" | "UK" | "UAE";
   createdAt: Date;
 }

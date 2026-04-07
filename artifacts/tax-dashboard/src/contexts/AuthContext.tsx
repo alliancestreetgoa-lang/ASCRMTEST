@@ -16,6 +16,7 @@ export type AuthUser = {
   role: "SuperAdmin" | "Admin" | "Manager" | "Employee";
   status: string;
   permissions?: string | null;
+  region?: "All" | "UK" | "UAE";
 };
 
 type AuthContextType = {

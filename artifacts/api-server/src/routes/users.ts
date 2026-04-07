@@ -116,6 +116,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     role: user.role,
     status: user.status,
     permissions: user.permissions ?? null,
+    region: user.region ?? "All",
   });
 });
 
