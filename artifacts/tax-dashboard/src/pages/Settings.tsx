@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import AppLayout from "@/components/layout/AppLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
@@ -273,6 +274,7 @@ function UserForm({ onClose, onSave, editUser }: {
 export default function Settings() {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === "SuperAdmin";
+  const [, navigate] = useLocation();
   const qc = useQueryClient();
   const [tab, setTab] = useState("Users");
   const [showUserForm, setShowUserForm] = useState(false);
@@ -302,6 +304,11 @@ export default function Settings() {
       onError: () => toast.error("Failed to remove user"),
     }
   });
+
+  if (!isSuperAdmin) {
+    navigate("/");
+    return null;
+  }
 
   const togglePermission = (roleName: string, perm: string) => {
     setRolePermissions(prev => {

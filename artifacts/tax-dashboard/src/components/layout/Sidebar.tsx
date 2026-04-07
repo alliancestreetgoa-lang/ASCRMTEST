@@ -19,8 +19,8 @@ const navItems = [
     ]
   },
   { icon: BarChart3, label: "Reports", href: "/reports" },
-  { icon: Shield, label: "Users", href: "/settings/users" },
-  { icon: Settings, label: "Settings", href: "/settings" },
+  { icon: Shield, label: "Users", href: "/settings/users", superAdminOnly: true },
+  { icon: Settings, label: "Settings", href: "/settings", superAdminOnly: true },
 ];
 
 export default function Sidebar() {
@@ -46,7 +46,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
+        {navItems.filter(item => !item.superAdminOnly || user?.role === "SuperAdmin").map((item) => {
           if (item.children) {
             const isParentActive = item.children.some(c => location.startsWith(c.href));
             return (
