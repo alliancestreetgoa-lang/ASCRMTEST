@@ -13,25 +13,56 @@ import { Plus, Search, Eye, Pencil, Trash2, X, Globe } from "lucide-react";
 import type { Client } from "@workspace/api-client-react";
 import { toast } from "sonner";
 
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] as const;
+const QUARTER_KEYS = ["Q1","Q2","Q3","Q4"] as const;
+const QUARTER_DEFAULTS: Record<string,{from:string;to:string}> = {
+  Q1:{from:"Jan",to:"Mar"}, Q2:{from:"Apr",to:"Jun"},
+  Q3:{from:"Jul",to:"Sep"}, Q4:{from:"Oct",to:"Dec"},
+};
+
+type QuarterEntry = { selected: boolean; from: string; to: string };
+type QuartersState = Record<string, QuarterEntry>;
+
+function parseVatQuarters(raw: string | null | undefined): QuartersState {
+  const result: QuartersState = {};
+  for (const k of QUARTER_KEYS) {
+    result[k] = { selected: false, ...QUARTER_DEFAULTS[k] };
+  }
+  if (!raw) return result;
+  try {
+    const parsed = JSON.parse(raw) as Record<string,{from:string;to:string}>;
+    for (const k of QUARTER_KEYS) {
+      if (parsed[k]) result[k] = { selected: true, from: parsed[k].from, to: parsed[k].to };
+    }
+    return result;
+  } catch {
+    // legacy comma-separated format
+    for (const k of raw.split(",").filter(Boolean)) {
+      if (result[k]) result[k].selected = true;
+    }
+    return result;
+  }
+}
+
+function serializeVatQuarters(state: QuartersState): string {
+  const selected: Record<string,{from:string;to:string}> = {};
+  for (const k of QUARTER_KEYS) {
+    if (state[k]?.selected) selected[k] = { from: state[k].from, to: state[k].to };
+  }
+  return Object.keys(selected).length ? JSON.stringify(selected) : "";
+}
+
 function ClientForm({ initial, onClose, onSave }: {
   initial?: Partial<Client>;
   onClose: () => void;
   onSave: (data: unknown) => void;
 }) {
-  const QUARTERS = [
-    { key: "Q1", label: "Q1", months: "Jan – Mar" },
-    { key: "Q2", label: "Q2", months: "Apr – Jun" },
-    { key: "Q3", label: "Q3", months: "Jul – Sep" },
-    { key: "Q4", label: "Q4", months: "Oct – Dec" },
-  ] as const;
-
   const [form, setForm] = useState({
     name: initial?.name ?? "",
     country: initial?.country ?? "UK",
     vatNumber: initial?.vatNumber ?? "",
     corporateTaxStatus: initial?.corporateTaxStatus ?? "Pending",
     corporateTaxDeadline: initial?.corporateTaxDeadline ?? "",
-    vatQuarters: initial?.vatQuarters ?? "",
     status: initial?.status ?? "Active",
     assignedTo: initial?.assignedTo ?? "",
     email: initial?.email ?? "",
@@ -39,16 +70,16 @@ function ClientForm({ initial, onClose, onSave }: {
     address: initial?.address ?? "",
   });
 
-  const selectedQuarters = form.vatQuarters
-    ? form.vatQuarters.split(",").filter(Boolean)
-    : [];
+  const [quarters, setQuarters] = useState<QuartersState>(() =>
+    parseVatQuarters(initial?.vatQuarters)
+  );
 
-  function toggleQuarter(q: string) {
-    const current = new Set(selectedQuarters);
-    if (current.has(q)) current.delete(q);
-    else current.add(q);
-    const ordered = QUARTERS.filter(x => current.has(x.key)).map(x => x.key);
-    setForm({ ...form, vatQuarters: ordered.join(",") });
+  function toggleQuarter(k: string) {
+    setQuarters(prev => ({ ...prev, [k]: { ...prev[k], selected: !prev[k].selected } }));
+  }
+
+  function setQuarterMonth(k: string, field: "from" | "to", val: string) {
+    setQuarters(prev => ({ ...prev, [k]: { ...prev[k], [field]: val } }));
   }
 
   return (
@@ -100,22 +131,40 @@ function ClientForm({ initial, onClose, onSave }: {
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">VAT Quarters</label>
-              <div className="flex gap-3">
-                {QUARTERS.map(q => (
-                  <label key={q.key} className="flex items-start gap-2 cursor-pointer select-none border border-border rounded-lg px-3 py-2 hover:bg-muted/50 transition-colors"
-                    style={{ minWidth: 0 }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedQuarters.includes(q.key)}
-                      onChange={() => toggleQuarter(q.key)}
-                      className="mt-0.5 w-4 h-4 rounded accent-primary shrink-0"
-                    />
-                    <div>
-                      <div className="text-sm font-semibold leading-tight">{q.label}</div>
-                      <div className="text-[10px] text-muted-foreground leading-tight">{q.months}</div>
+              <div className="grid grid-cols-4 gap-2">
+                {QUARTER_KEYS.map(k => {
+                  const q = quarters[k];
+                  return (
+                    <div key={k}
+                      className={`flex flex-col gap-2 rounded-lg border p-2.5 transition-colors ${q.selected ? "border-primary bg-primary/5" : "border-border bg-white"}`}>
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={q.selected}
+                          onChange={() => toggleQuarter(k)}
+                          className="w-3.5 h-3.5 rounded accent-primary shrink-0"
+                        />
+                        <span className={`text-sm font-semibold ${q.selected ? "text-primary" : "text-foreground"}`}>{k}</span>
+                      </label>
+                      <div className="flex flex-col gap-1">
+                        <select
+                          value={q.from}
+                          onChange={e => setQuarterMonth(k, "from", e.target.value)}
+                          className="w-full px-1.5 py-1 text-xs border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary/30"
+                        >
+                          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <select
+                          value={q.to}
+                          onChange={e => setQuarterMonth(k, "to", e.target.value)}
+                          className="w-full px-1.5 py-1 text-xs border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary/30"
+                        >
+                          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                      </div>
                     </div>
-                  </label>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <div>
@@ -152,7 +201,7 @@ function ClientForm({ initial, onClose, onSave }: {
         </div>
         <div className="px-6 py-4 border-t flex justify-end gap-3">
           <button onClick={onClose} className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-muted transition-colors">Cancel</button>
-          <button onClick={() => onSave(form)} disabled={!form.name || !form.assignedTo}
+          <button onClick={() => onSave({ ...form, vatQuarters: serializeVatQuarters(quarters) })} disabled={!form.name || !form.assignedTo}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
             {initial?.id ? "Save Changes" : "Add Client"}
           </button>
